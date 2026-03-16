@@ -1,0 +1,66 @@
+.container-page{
+  padding:20px;
+}
+
+.dashboard-title{
+  margin-bottom:20px;
+  font-weight:600;
+}
+
+/* Dashboard Cards */
+
+.dashboard-card{
+  border:none;
+  color:white;
+  border-radius:10px;
+}
+
+.primary{
+  background:#0d6efd;
+}
+
+.info{
+  background:#0dcaf0;
+}
+
+.success{
+  background:#198754;
+}
+
+.danger{
+  background:#dc3545;
+}
+
+
+/* Chart Card */
+
+.chart-card{
+  margin-top:20px;
+  border:none;
+  border-radius:10px;
+}
+
+.chart-title{
+  margin-bottom:15px;
+}
+
+
+/* Tables */
+
+.dashboard-table{
+  border:none;
+  border-radius:10px;
+}
+
+.low-stock-title{
+  color:#ffc107;
+}
+
+.out-stock-title{
+  color:#dc3545;
+}
+
+.danger-text{
+  color:#dc3545;
+  font-weight:600;
+}

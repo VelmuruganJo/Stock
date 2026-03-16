@@ -1,0 +1,26 @@
+.app-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#2c3e50;
+color:white;
+padding:12px 20px;
+
+/* FIXED HEADER */
+position:fixed;
+top:0;
+left:220px;   /* sidebar width */
+right:0;
+height:60px;
+
+z-index:1000;
+}
+
+.logo{
+font-size:20px;
+font-weight:bold;
+}
+
+.header-right{
+font-size:14px;
+}

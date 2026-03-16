@@ -1,0 +1,25 @@
+.container-page{
+padding:20px;
+}
+
+.stock-table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+.stock-table th{
+background:#2c3e50;
+color:white;
+padding:10px;
+}
+
+.stock-table td{
+padding:10px;
+text-align:center;
+border:1px solid #ddd;
+}
+
+.stock-table tr:nth-child(even){
+background:#f2f2f2;
+}

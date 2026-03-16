@@ -1,0 +1,69 @@
+.sidebar{
+  width:220px;
+  height:100vh;
+  background:linear-gradient(180deg,#4f7fd89d,#5c8ee6);
+  color:white;
+  position:fixed;
+  left:0;
+  top:0;
+  padding:20px;
+}
+
+.logo{
+  text-align:center;
+  margin-bottom:30px;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.menu{
+  list-style:none;
+  padding:0;
+}
+
+.menu li{
+  margin:8px 0;
+}
+
+.menu li a{
+  display:block;
+  padding:12px 15px;
+  text-decoration:none;
+  color:white;
+  border-radius:8px;
+  transition:all 0.25s ease;
+}
+
+/* hover */
+.menu li a:hover{
+  background:rgba(158, 8, 8, 0.39);
+}
+
+/* ACTIVE MENU */
+.menu a.active{
+  background:white;
+  color:#f51bd8;
+  font-weight:600;
+  border-radius:30px;
+  padding-left:40px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+}
+
+.logout-area{
+  margin-top:40px;
+}
+
+.logout-btn{
+  width:100%;
+  padding:10px;
+  background:#ef4444;
+  border:none;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.logout-btn:hover{
+  background:#dc2626;
+}
