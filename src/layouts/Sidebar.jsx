@@ -9,7 +9,7 @@ const [veoliaOpen, setVeoliaOpen] = useState(false);
 const logout = ()=>{
 localStorage.removeItem("login");
 sessionStorage.removeItem("login");
-window.location="/login";
+window.location="/";
 }
 
 return(
