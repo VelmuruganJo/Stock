@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "./style/StockIn.css";
 
 function StockIn(){
@@ -17,14 +19,16 @@ const [price,setPrice]=useState("");
 const [qty,setQty]=useState("");
 
 const [records,setRecords]=useState([]);
+const [filtered,setFiltered]=useState([]);
+const [search,setSearch]=useState("");
 const [editId,setEditId]=useState(null);
 
-
- // LOAD STOCK
+// LOAD
 const loadStock=async()=>{
 try{
 const res=await axios.get(STOCK_API);
 setRecords(res.data || []);
+setFiltered(res.data || []);
 }catch(err){
 console.error(err);
 }
@@ -34,86 +38,85 @@ useEffect(()=>{
 loadStock();
 },[]);
 
+// SEARCH
+const handleSearch = (val) => {
 
+setSearch(val);
 
- // SEARCH MATERIAL
-const searchMaterial = async () => {
-
-if(!materialCode){
-alert("Enter Material Code");
+if(val===""){
+setFiltered(records);
 return;
 }
 
+const f = records.filter(r =>
+Object.values(r).some(v =>
+String(v).toLowerCase().includes(val.toLowerCase())
+)
+);
+
+setFiltered(f);
+};
+
+// EXPORT
+const exportExcel = () => {
+
+const data = filtered.map((r,i)=>({
+"SlNo":i+1,
+"Date":r.date,
+"Material Code":r.materialCode,
+"Material":r.materialName,
+"Supplier":r.supplierName,
+"Price":r.price,
+"Qty":r.qty
+}));
+
+const ws = XLSX.utils.json_to_sheet(data);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "StockIn");
+
+const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
+saveAs(new Blob([buf]),"StockIn.xlsx");
+};
+
+// SEARCH MATERIAL
+const searchMaterial = async () => {
 try{
-
 const res = await axios.get(MATERIAL_API + materialCode);
-
 const data = res.data || {};
-console.log("Data fetched:", data);
-
 setMaterialName(data.itemName || "");
 setSupplierName(data.vendor || "");
 setPrice(data.price || "");
-
 }catch(err){
-
 alert("Material Not Found");
-
 setMaterialName("");
 setSupplierName("");
 setPrice("");
-
 }
-
 };
 
-
-
- // ADD / UPDATE
+// SUBMIT
 const handleSubmit=async(e)=>{
-
 e.preventDefault();
 
-const data={
-date,
-materialCode,
-materialName,
-supplierName,
-price,
-qty
-};
+const data={date,materialCode,materialName,supplierName,price,qty};
 
 try{
-
 if(editId){
-
 await axios.put(STOCK_API+"/"+editId,data);
 setEditId(null);
-
 }else{
-
 await axios.post(STOCK_API,data);
-
 }
-
 }catch(err){
-
-console.error(err);
 alert("Error saving stock");
-
 }
 
 resetForm();
-
 setShowForm(false);
-
 loadStock();
-
 };
 
-
-
- // RESET FORM
+// RESET
 const resetForm=()=>{
 setDate("");
 setMaterialCode("");
@@ -123,38 +126,23 @@ setPrice("");
 setQty("");
 };
 
-
-
- // EDIT
+// EDIT
 const editStock=(r)=>{
-
 setEditId(r.id);
 setShowForm(true);
-
-setDate(r?.date || "");
-setMaterialCode(r?.materialCode || "");
-setMaterialName(r?.materialName || "");
-setSupplierName(r?.supplierName || "");
-setPrice(r?.price || "");
-setQty(r?.qty || "");
-
+setDate(r.date);
+setMaterialCode(r.materialCode);
+setMaterialName(r.materialName);
+setSupplierName(r.supplierName);
+setPrice(r.price);
+setQty(r.qty);
 };
 
-
-
- // DELETE
+// DELETE
 const deleteStock=async(id)=>{
-
-try{
 await axios.delete(STOCK_API+"/"+id);
 loadStock();
-}catch(err){
-console.error(err);
-}
-
 };
-
-
 
 return(
 
@@ -162,88 +150,55 @@ return(
 
 <h2>Stock In</h2>
 
-<button
-className="stock-btn"
-onClick={()=>setShowForm(!showForm)}
->
+<div className="top-bar">
+<button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
 Stock In
 </button>
 
+<input
+placeholder="Search..."
+value={search}
+onChange={e=>handleSearch(e.target.value)}
+className="search-input"
+/>
+
+<button onClick={exportExcel} className="btn-export">
+Export Excel
+</button>
+</div>
 
 {showForm && (
-
 <form className="stock-form" onSubmit={handleSubmit}>
 
-<input
-type="date"
-value={date}
-onChange={(e)=>setDate(e.target.value)}
-required
-/>
+<input type="date" value={date} onChange={(e)=>setDate(e.target.value)} required/>
 
-<input
-type="text"
-placeholder="Material Code"
+<input type="text" placeholder="Material Code"
 value={materialCode}
-onChange={(e)=>setMaterialCode(e.target.value)}
-/>
+onChange={(e)=>setMaterialCode(e.target.value)}/>
 
-<button
-type="button"
-className="search-btn"
-onClick={searchMaterial}
->
-Search
-</button>
+<button type="button" onClick={searchMaterial}>Search</button>
 
-<input
-type="text"
-placeholder="Material Name"
-value={materialName}
-readOnly
-/>
+<input type="text" value={materialName} readOnly/>
+<input type="text" value={supplierName} readOnly/>
+<input type="number" value={price} readOnly/>
 
-<input
-type="text"
-placeholder="Supplier Name"
-value={supplierName}
-readOnly
-/>
-
-<input
-type="number"
-placeholder="Price"
-value={price}
-readOnly
-/>
-
-<input
-type="number"
-placeholder="Quantity"
+<input type="number" placeholder="Qty"
 value={qty}
-onChange={(e)=>setQty(e.target.value)}
-required
-/>
+onChange={(e)=>setQty(e.target.value)} required/>
 
-<button className="submit-btn">
-{editId ? "Update Stock" : "Add Stock"}
-</button>
+<button>{editId ? "Update" : "Add"}</button>
 
 </form>
-
 )}
-
-
 
 <h3>Stock In History</h3>
 
 <table className="stock-table">
-
 <thead>
 <tr>
 <th>SlNo</th>
 <th>Date</th>
-<th>Material Code</th>
+<th>Code</th>
 <th>Material</th>
 <th>Supplier</th>
 <th>Price</th>
@@ -255,11 +210,9 @@ required
 
 <tbody>
 
-{records.map((r,index)=>(
-
+{filtered.length>0 ? filtered.map((r,i)=>(
 <tr key={r.id}>
-
-<td>{index+1}</td>
+<td>{i+1}</td>
 <td>{r.date}</td>
 <td>{r.materialCode}</td>
 <td>{r.materialName}</td>
@@ -267,36 +220,18 @@ required
 <td>{r.price}</td>
 <td>{r.qty}</td>
 
-<td>
-<button
-className="edit-btn"
-onClick={()=>editStock(r)}
->
-Edit
-</button>
-</td>
-
-<td>
-<button
-className="delete-btn"
-onClick={()=>deleteStock(r.id)}
->
-Delete
-</button>
-</td>
-
+<td><button onClick={()=>editStock(r)}>Edit</button></td>
+<td><button onClick={()=>deleteStock(r.id)}>Delete</button></td>
 </tr>
-
-))}
+)) : (
+<tr><td colSpan="9">No Data Found</td></tr>
+)}
 
 </tbody>
-
 </table>
 
 </div>
-
 );
-
 }
 
 export default StockIn;

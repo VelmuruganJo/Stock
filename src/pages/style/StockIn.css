@@ -1,6 +1,7 @@
 .stock-page{
 margin-left:220px;
-padding:30px;
+/* padding:50px; */
+padding-top: 70PX;
 width:calc(100% - 220px);
 }
 
