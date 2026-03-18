@@ -1,97 +1,88 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import "./style/StockIn.css";
+import "./style/common.css";
+import API from "../api";
 
-function StockOut(){
+function StockOut() {
 
-const MATERIAL_API="http://192.168.1.9:8080/api/materials/search/";
-const STOCK_API="http://192.168.1.9:8080/api/stockout";
+  const [showForm,setShowForm]=useState(false);
 
-const [showForm,setShowForm]=useState(false);
+  const [date,setDate]=useState("");
+  const [materialCode,setMaterialCode]=useState("");
+  const [materialName,setMaterialName]=useState("");
+  const [supplierName,setSupplierName]=useState("");
+  const [price,setPrice]=useState("");
+  const [qty,setQty]=useState("");
 
-const [date,setDate]=useState("");
-const [materialCode,setMaterialCode]=useState("");
-const [materialName,setMaterialName]=useState("");
-const [supplierName,setSupplierName]=useState("");
-const [price,setPrice]=useState("");
-const [qty,setQty]=useState("");
+  const [records,setRecords]=useState([]);
+  const [filtered,setFiltered]=useState([]);
+  const [search,setSearch]=useState("");
+  const [editId,setEditId]=useState(null);
 
-const [records,setRecords]=useState([]);
-const [filtered,setFiltered]=useState([]);
-const [search,setSearch]=useState("");
-const [editId,setEditId]=useState(null);
+  const loadStock = async () => {
+    const res = await API.get("/stockout");
+    setRecords(res.data || []);
+    setFiltered(res.data || []);
+  };
 
-// LOAD
-const loadStock=async()=>{
-const res=await axios.get(STOCK_API);
-setRecords(res.data || []);
-setFiltered(res.data || []);
-};
+  useEffect(()=>{ loadStock(); },[]);
 
-useEffect(()=>{
-loadStock();
-},[]);
+  const handleSearch = (val) => {
+    setSearch(val);
 
-// SEARCH
-const handleSearch=(val)=>{
-setSearch(val);
+    if(val===""){
+      setFiltered(records);
+      return;
+    }
 
-if(val===""){
-setFiltered(records);
-return;
-}
+    const f = records.filter(r =>
+      Object.values(r).some(v =>
+        String(v).toLowerCase().includes(val.toLowerCase())
+      )
+    );
 
-const f = records.filter(r =>
-Object.values(r).some(v =>
-String(v).toLowerCase().includes(val.toLowerCase())
-)
-);
+    setFiltered(f);
+  };
 
-setFiltered(f);
-};
+  const exportExcel = () => {
+    const data = filtered.map((r,i)=>({
+      "SlNo":i+1,
+      "Date":r.date,
+      "Material Code":r.materialCode,
+      "Material":r.materialName,
+      "Supplier":r.supplierName,
+      "Price":r.price,
+      "Qty":r.qty
+    }));
 
-// EXPORT
-const exportExcel=()=>{
-const data = filtered.map((r,i)=>({
-"SlNo":i+1,
-"Date":r.date,
-"Material Code":r.materialCode,
-"Material":r.materialName,
-"Supplier":r.supplierName,
-"Price":r.price,
-"Qty":r.qty
-}));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "StockOut");
 
-const ws = XLSX.utils.json_to_sheet(data);
-const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "StockOut");
+    const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
+    saveAs(new Blob([buf]),"StockOut.xlsx");
+  };
 
-const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
-saveAs(new Blob([buf]),"StockOut.xlsx");
-};
+  const searchMaterial = async () => {
+    try {
+      const res = await API.get(`/materials/search/${materialCode}`);
+      const d = res.data || {};
 
-// SEARCH MATERIAL
-const searchMaterial=async()=>{
-try{
-const res=await axios.get(MATERIAL_API+materialCode);
-const data=res.data || {};
-setMaterialName(data.itemName || "");
-setSupplierName(data.vendor || "");
-setPrice(data.price || "");
-}catch{
-alert("Material Not Found");
-}
-};
+      setMaterialName(d.itemName || "");
+      setSupplierName(d.vendor || "");
+      setPrice(d.price || "");
+    } catch {
+      alert("Material Not Found");
+    }
+  };
 
-// SUBMIT
-const handleSubmit=async(e)=>{
-e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-const data={date,materialCode,materialName,supplierName,price,qty};
+    const data = {date,materialCode,materialName,supplierName,price,qty};
 
-try{
+    try{
 if(editId){
 await axios.put(STOCK_API+"/"+editId,data);
 setEditId(null);
@@ -103,131 +94,138 @@ alert("Not enough stock!");
 return;
 }
 
-resetForm();
-setShowForm(false);
-loadStock();
+    resetForm();
+    setShowForm(false);
+    loadStock();
+  };
+
+ const resetForm = () => {
+  setDate("");
+  setMaterialCode("");
+  setMaterialName("");
+  setSupplierName("");
+  setPrice("");
+  setQty("");
+  setEditId(null);
+  setShowForm(false);
 };
 
-// RESET
-const resetForm=()=>{
-setDate("");
-setMaterialCode("");
-setMaterialName("");
-setSupplierName("");
-setPrice("");
-setQty("");
-};
+  const editStock = (r) => {
+    setEditId(r.id);
+    setShowForm(true);
+    setDate(r.date);
+    setMaterialCode(r.materialCode);
+    setMaterialName(r.materialName);
+    setSupplierName(r.supplierName);
+    setPrice(r.price);
+    setQty(r.qty);
+  };
 
-// EDIT
-const editStock=(r)=>{
-setEditId(r.id);
-setShowForm(true);
-setDate(r.date);
-setMaterialCode(r.materialCode);
-setMaterialName(r.materialName);
-setSupplierName(r.supplierName);
-setPrice(r.price);
-setQty(r.qty);
-};
+  const deleteStock = async (id) => {
+    await API.delete(`/stockout/${id}`);
+    loadStock();
+  };
 
-// DELETE
-const deleteStock=async(id)=>{
-await axios.delete(STOCK_API+"/"+id);
-loadStock();
-};
+  return (
+    <div className="stock-page">
 
-return(
+      <h2>Stock Out</h2>
 
-<div className="stock-page">
+      <div className="top-bar">
+        <button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
+          Stock Out
+        </button>
 
-<h2>Stock Out</h2>
+        <input
+          placeholder="Search..."
+          value={search}
+          onChange={e=>handleSearch(e.target.value)}
+          className="search-input"
+        />
 
-<div className="top-bar">
+        <button onClick={exportExcel} className="btn-export">
+          Export Excel
+        </button>
+      </div>
 
-<button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
-Stock Out
-</button>
+      {showForm && (
+        <form className="stock-form" onSubmit={handleSubmit}>
 
-<input
-placeholder="Search..."
-value={search}
-onChange={e=>handleSearch(e.target.value)}
-className="search-input"
-/>
+          <input className="form-input" type="date" value={date} onChange={(e)=>setDate(e.target.value)} required/>
 
-<button onClick={exportExcel} className="btn-export">
-Export Excel
-</button>
+          <input className="form-input" type="text" placeholder="Material Code"
+            value={materialCode}
+            onChange={(e)=>setMaterialCode(e.target.value)}
+          />
 
-</div>
+          <button type="button" className="stock-btn" onClick={searchMaterial}>
+            Search
+          </button>
 
-{showForm && (
-<form className="stock-form" onSubmit={handleSubmit}>
+          <input className="form-input" type="text" value={materialName} readOnly/>
+          <input className="form-input" type="text" value={supplierName} readOnly/>
+          <input className="form-input" type="number" value={price} readOnly/>
 
-<input type="date" value={date} onChange={(e)=>setDate(e.target.value)} required/>
+          <input className="form-input" type="number" placeholder="Qty"
+            value={qty}
+            onChange={(e)=>setQty(e.target.value)} required
+          />
 
-<input type="text" placeholder="Material Code"
-value={materialCode}
-onChange={(e)=>setMaterialCode(e.target.value)}/>
+          <button className="btn-save">
+            {editId ? "Update" : "Add"}
+          </button>
 
-<button type="button" onClick={searchMaterial}>Search</button>
+          <button type="button" className="btn-cancel" onClick={resetForm}>
+            Cancel
+          </button>
 
-<input type="text" value={materialName} readOnly/>
-<input type="text" value={supplierName} readOnly/>
-<input type="number" value={price} readOnly/>
+        </form>
+      )}
 
-<input type="number" placeholder="Qty"
-value={qty}
-onChange={(e)=>setQty(e.target.value)} required/>
+      <div className="table-container">
+        <table className="stock-table">
 
-<button>{editId ? "Update" : "Add"}</button>
+          <thead>
+            <tr>
+              <th>SlNo</th>
+              <th>Date</th>
+              <th>Code</th>
+              <th>Material</th>
+              <th>Supplier</th>
+              <th>Price</th>
+              <th>Qty</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
 
-</form>
-)}
+          <tbody>
+            {filtered.map((r,i)=>(
+              <tr key={r.id}>
+                <td>{i+1}</td>
+                <td>{r.date}</td>
+                <td>{r.materialCode}</td>
+                <td>{r.materialName}</td>
+                <td>{r.supplierName}</td>
+                <td>{r.price}</td>
+                <td>{r.qty}</td>
 
-<h3>Stock Out History</h3>
+                <td>
+                  <button className="btn-save" onClick={()=>editStock(r)}>Edit</button>
+                </td>
 
-<table className="stock-table">
+                <td>
+                  <button className="btn-delete" onClick={()=>deleteStock(r.id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
 
-<thead>
-<tr>
-<th>SlNo</th>
-<th>Date</th>
-<th>Code</th>
-<th>Material</th>
-<th>Supplier</th>
-<th>Price</th>
-<th>Qty</th>
-<th>Edit</th>
-<th>Delete</th>
-</tr>
-</thead>
+        </table>
+      </div>
 
-<tbody>
-
-{filtered.length>0 ? filtered.map((r,i)=>(
-<tr key={r.id}>
-<td>{i+1}</td>
-<td>{r.date}</td>
-<td>{r.materialCode}</td>
-<td>{r.materialName}</td>
-<td>{r.supplierName}</td>
-<td>{r.price}</td>
-<td>{r.qty}</td>
-
-<td><button onClick={()=>editStock(r)}>Edit</button></td>
-<td><button onClick={()=>deleteStock(r.id)}>Delete</button></td>
-</tr>
-)) : (
-<tr><td colSpan="9">No Data Found</td></tr>
-)}
-
-</tbody>
-
-</table>
-
-</div>
-);
+    </div>
+  );
 }
 
 export default StockOut;
