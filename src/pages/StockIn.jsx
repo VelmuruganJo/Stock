@@ -6,8 +6,8 @@ import "./style/StockIn.css";
 
 function StockIn(){
 
-const MATERIAL_API="http://localhost:8080/api/materials/search/";
-const STOCK_API="http://localhost:8080/api/stockin";
+const MATERIAL_API="http://192.168.1.9:8080/api/materials/search/";
+const STOCK_API="http://192.168.1.9:8080/api/stockin";
 
 const [showForm,setShowForm]=useState(false);
 
