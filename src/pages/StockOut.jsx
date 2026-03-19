@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "./style/common.css";
 import API from "../api";
+import axios from "axios";
 
 function StockOut() {
 
@@ -26,6 +27,7 @@ function StockOut() {
     setFiltered(res.data || []);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(()=>{ loadStock(); },[]);
 
   const handleSearch = (val) => {
@@ -76,23 +78,47 @@ function StockOut() {
       alert("Material Not Found");
     }
   };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const data = {date,materialCode,materialName,supplierName,price,qty};
+  const data = {
+    date,
+    materialCode,
+    materialName,
+    supplierName,
+    price,
+    qty
+  };
 
-    try{
-if(editId){
-await axios.put(STOCK_API+"/"+editId,data);
-setEditId(null);
-}else{
-await axios.post(STOCK_API,data);
-}
-}catch(err){
-alert("Not enough stock!");
-return;
-}
+  try {
+    if (editId) {
+      await axios.put(`${API}/${editId}`, data);
+      setEditId(null);
+    } else {
+      await axios.post(API, data);
+    }
+
+    // ✅ success message
+    alert("Saved successfully");
+
+    // ✅ clear form
+    setDate("");
+    setMaterialCode("");
+    setMaterialName("");
+    setSupplierName("");
+    setPrice("");
+    setQty("");
+
+  } catch (err) {
+    console.error(err);
+
+    // ✅ better error handling
+    if (err.response && err.response.status === 400) {
+      alert(err.response.data || "Not enough stock!");
+    } else {
+      alert("Something went wrong!");
+    }
+  }
 
     resetForm();
     setShowForm(false);

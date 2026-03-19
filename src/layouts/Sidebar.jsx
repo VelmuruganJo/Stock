@@ -6,11 +6,11 @@ function Sidebar(){
 
 const [veoliaOpen, setVeoliaOpen] = useState(false);
 
-const logout = ()=>{
-localStorage.removeItem("login");
-sessionStorage.removeItem("login");
-window.location="/";
-}
+const logout = () => {
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+  window.location = "/login";
+};
 
 return(
 

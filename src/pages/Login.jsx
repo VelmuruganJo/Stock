@@ -14,23 +14,23 @@ function Login(){
   const handleLogin = (e)=>{
     e.preventDefault();
 
-    if(username === "admin" && password === "Fraudu@ve1"){
+    if(username === "admin" && password === "1"){
+
+      const fakeToken = "demo-token-123";
 
       if (remember) {
-        localStorage.setItem("login", "true");
-        sessionStorage.removeItem("login");
-        } 
-        else 
-          {
-            sessionStorage.setItem("login", "true");
-            localStorage.removeItem("login");
-          }
+        localStorage.setItem("token", fakeToken);
+        sessionStorage.removeItem("token");
+      } else {
+        sessionStorage.setItem("token", fakeToken);
+        localStorage.removeItem("token");
+      }
 
       navigate("/");
-
-    }else{
+    } else {
       setError("Invalid username or password");
     }
+      
   }
 
   return(
