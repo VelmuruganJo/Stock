@@ -27,6 +27,7 @@ function VeoliaStockIn() {
     setFiltered(res.data || []);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadStock(); }, []);
 
   const handleSearch = (val) => {

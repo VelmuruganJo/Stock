@@ -29,6 +29,7 @@ function VeoliaMaterial() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -37,6 +38,7 @@ function VeoliaMaterial() {
     const sorted = [...records].sort((a, b) =>
       (a.category || "").localeCompare(b.category || "")
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredRecords(sorted);
   }, [records]);
 

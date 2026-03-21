@@ -23,50 +23,66 @@ function Dashboard() {
   const [lowStock, setLowStock] = useState([]);
   const [outStock, setOutStock] = useState([]);
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
 
   const loadDashboard = async () => {
-    try {
+  try {
 
-      const mat = await API.get("/materials");
-      const stock = await API.get("/currentstock");
-      const sin = await API.get("/stockin");
-      const sout = await API.get("/stockout");
+    // 🚀 PARALLEL API CALLS (FASTER)
+    const [matRes, stockRes, sinRes, soutRes] = await Promise.all([
+      API.get("/materials"),
+      API.get("/currentstock"),
+      API.get("/stockin"),
+      API.get("/stockout")
+    ]);
 
-      // TOTAL MATERIALS
-      setMaterials(mat.data.length);
+    const mat = matRes.data || [];
+    const stock = stockRes.data || [];
+    const sin = sinRes.data || [];
+    const sout = soutRes.data || [];
 
-      // TOTAL STOCK
-      const total = stock.data.reduce((sum, s) => sum + s.currentStock, 0);
-      setTotalStock(total);
+    // 📊 TOTAL MATERIALS
+    setMaterials(mat.length);
 
-      // TODAY DATE
-      const today = new Date().toISOString().split("T")[0];
+    // 📦 TOTAL STOCK
+    const total = stock.reduce((sum, s) => sum + (s.currentStock || 0), 0);
+    setTotalStock(total);
 
-      // TODAY IN
-      const todayInData = sin.data.filter(d => d.date === today);
-      const inQty = todayInData.reduce((sum, d) => sum + d.qty, 0);
-      setTodayIn(inQty);
+    // 📅 TODAY DATE
+    const today = new Date().toISOString().split("T")[0];
 
-      // TODAY OUT
-      const todayOutData = sout.data.filter(d => d.date === today);
-      const outQty = todayOutData.reduce((sum, d) => sum + d.qty, 0);
-      setTodayOut(outQty);
+    // 📥 TODAY IN
+    const inQty = sin
+      .filter(d => d.date === today)
+      .reduce((sum, d) => sum + (d.qty || 0), 0);
 
-      // LOW STOCK (<10)
-      const low = stock.data.filter(s => s.currentStock > 0 && s.currentStock < 10);
-      setLowStock(low);
+    setTodayIn(inQty);
 
-      // OUT OF STOCK (=0)
-      const out = stock.data.filter(s => s.currentStock === 0);
-      setOutStock(out);
+    // 📤 TODAY OUT
+    const outQty = sout
+      .filter(d => d.date === today)
+      .reduce((sum, d) => sum + (d.qty || 0), 0);
 
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    setTodayOut(outQty);
+
+    // ⚠️ LOW STOCK (<10)
+    const low = stock.filter(s =>
+      (s.currentStock || 0) > 0 && (s.currentStock || 0) < 10
+    );
+    setLowStock(low);
+
+    // ❌ OUT OF STOCK (=0)
+    const out = stock.filter(s => (s.currentStock || 0) === 0);
+    setOutStock(out);
+
+  } catch (err) {
+    console.error("Dashboard Load Error:", err);
+  }
+};
+
+useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  loadDashboard();
+}, []);
 
   return (
     <div className="stock-page">

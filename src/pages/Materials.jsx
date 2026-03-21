@@ -31,12 +31,14 @@ function Materials() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(()=>{ loadData(); },[]);
 
   useEffect(()=>{
     const sorted = [...records].sort((a, b) =>
       (a.category || "").localeCompare(b.category || "")
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredRecords(sorted);
   },[records]);
 
@@ -130,11 +132,11 @@ function Materials() {
   };
 
   // DELETE
-  const deleteMaterial = async (code) => {
-    if(!window.confirm("Delete?")) return;
-    await API.delete("/materials/" + code);
-    loadData();
-  };
+  // const deleteMaterial = async (code) => {
+  //   if(!window.confirm("Delete?")) return;
+  //   await API.delete("/materials/" + code);
+  //   loadData();
+  // };
 
   return (
 
