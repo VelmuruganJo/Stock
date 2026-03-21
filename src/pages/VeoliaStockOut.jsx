@@ -4,34 +4,36 @@ import { saveAs } from "file-saver";
 import "./style/common.css";
 import API from "../api";
 
-function StockOut() {
+function VeoliaStockOut() {
 
-  const [showForm,setShowForm]=useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [date,setDate]=useState("");
-  const [materialCode,setMaterialCode]=useState("");
-  const [materialName,setMaterialName]=useState("");
-  const [supplierName,setSupplierName]=useState("");
-  const [reference,setReference]=useState(""); // ✅ changed from price
-  const [qty,setQty]=useState("");
+  const [date, setDate] = useState("");
+  const [materialCode, setMaterialCode] = useState("");
+  const [materialName, setMaterialName] = useState("");
+  const [customer, setCustomer] = useState("");
+  const [price, setPrice] = useState("");
+  const [qty, setQty] = useState("");
 
-  const [records,setRecords]=useState([]);
-  const [filtered,setFiltered]=useState([]);
-  const [search,setSearch]=useState("");
-  const [editId,setEditId]=useState(null);
+  const [records, setRecords] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editId, setEditId] = useState(null);
 
+  // LOAD DATA
   const loadStock = async () => {
-    const res = await API.get("/stockout");
+    const res = await API.get("/Veoliastockout");
     setRecords(res.data || []);
     setFiltered(res.data || []);
   };
 
-  useEffect(()=>{ loadStock(); },[]);
+  useEffect(() => { loadStock(); }, []);
 
+  // SEARCH
   const handleSearch = (val) => {
     setSearch(val);
 
-    if(val===""){
+    if (val === "") {
       setFiltered(records);
       return;
     }
@@ -45,37 +47,40 @@ function StockOut() {
     setFiltered(f);
   };
 
+  // EXPORT
   const exportExcel = () => {
-    const data = filtered.map((r,i)=>({
-      "SlNo":i+1,
-      "Date":r.date,
-      "Material Code":r.materialCode,
-      "Material":r.materialName,
-      "Supplier":r.supplierName,
-      "Reference":r.reference,
-      "Qty":r.qty
+    const data = filtered.map((r, i) => ({
+      "SlNo": i + 1,
+      "Date": r.date,
+      "Material Code": r.materialCode,
+      "Material": r.materialName,
+      "Customer": r.customer,
+      "Price": r.price,
+      "Qty": r.qty
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "StockOut");
+    XLSX.utils.book_append_sheet(wb, ws, "VeoliaStockOut");
 
-    const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
-    saveAs(new Blob([buf]),"StockOut.xlsx");
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([buf]), "VeoliaStockOut.xlsx");
   };
 
+  // SEARCH MATERIAL
   const searchMaterial = async () => {
     try {
-      const res = await API.get(`/materials/search/${materialCode}`);
+      const res = await API.get(`/Veoliamaterials/search/${materialCode}`);
       const d = res.data || {};
 
       setMaterialName(d.itemName || "");
-      setSupplierName(d.vendor || "");
+      setPrice(d.price || "");
     } catch {
       alert("Material Not Found");
     }
   };
 
+  // SAVE / UPDATE
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -83,22 +88,23 @@ function StockOut() {
       date,
       materialCode,
       materialName,
-      supplierName,
-      reference, // ✅ send reference
+      customer,
+      price,
       qty
     };
 
     try {
       if (editId) {
-        await API.put(`/stockout/${editId}`, data);
+        await API.put(`/Veoliastockout/${editId}`, data);
         setEditId(null);
       } else {
-        await API.post("/stockout", data);
+        await API.post("/Veoliastockout", data);
       }
 
       alert("Saved successfully");
-
     } catch (err) {
+      console.error(err);
+
       if (err.response && err.response.status === 400) {
         alert(err.response.data || "Not enough stock!");
       } else {
@@ -107,49 +113,48 @@ function StockOut() {
     }
 
     resetForm();
-    setShowForm(false);
     loadStock();
   };
 
+  // RESET
   const resetForm = () => {
     setDate("");
     setMaterialCode("");
     setMaterialName("");
-    setSupplierName("");
-    setReference("");
+    setCustomer("");
+    setPrice("");
     setQty("");
     setEditId(null);
     setShowForm(false);
   };
 
+  // EDIT (CLICK MATERIAL CODE)
   const editStock = (r) => {
     setEditId(r.id);
     setShowForm(true);
 
-    setDate(r.date);
-    setMaterialCode(r.materialCode);
-    setMaterialName(r.materialName);
-    setSupplierName(r.supplierName);
-    setReference(r.reference || "");
-    setQty(r.qty);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setDate(r.date || "");
+    setMaterialCode(r.materialCode || "");
+    setMaterialName(r.materialName || "");
+    setCustomer(r.customer || "");
+    setPrice(r.price || "");
+    setQty(r.qty || "");
   };
 
   return (
     <div className="stock-page">
 
-      <h2>Stock Out</h2>
+      <h2>Veolia Out</h2>
 
       <div className="top-bar">
-        <button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
-          Stock Out
+        <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
+          Veolia Out
         </button>
 
         <input
           placeholder="Search..."
           value={search}
-          onChange={e=>handleSearch(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           className="search-input"
         />
 
@@ -161,32 +166,30 @@ function StockOut() {
       {showForm && (
         <form className="stock-form" onSubmit={handleSubmit}>
 
-          <input className="form-input" type="date" value={date} onChange={(e)=>setDate(e.target.value)} required/>
+          <input className="form-input" type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)} required />
 
           <input className="form-input" type="text" placeholder="Material Code"
             value={materialCode}
-            onChange={(e)=>setMaterialCode(e.target.value)}
+            onChange={(e) => setMaterialCode(e.target.value)}
           />
 
           <button type="button" className="stock-btn" onClick={searchMaterial}>
             Search
           </button>
 
-          <input className="form-input" type="text" value={materialName} readOnly/>
-          <input className="form-input" type="text" value={supplierName} readOnly/>
+          <input className="form-input" type="text" value={materialName} readOnly />
 
-          {/* ✅ Manual Reference Field */}
-          <input 
-            className="form-input" 
-            type="text" 
-            placeholder="Reference"
-            value={reference}
-            onChange={(e)=>setReference(e.target.value)}
-          />
+          <input className="form-input" type="text" placeholder="Customer"
+            value={customer}
+            onChange={(e) => setCustomer(e.target.value)} />
+
+          <input className="form-input" type="number" value={price} readOnly />
 
           <input className="form-input" type="number" placeholder="Qty"
             value={qty}
-            onChange={(e)=>setQty(e.target.value)} required
+            onChange={(e) => setQty(e.target.value)} required
           />
 
           <button className="btn-save">
@@ -207,31 +210,31 @@ function StockOut() {
             <tr>
               <th>SlNo</th>
               <th>Date</th>
-              <th>Reference</th> 
-              <th>Code</th>
+              <th>Material Code</th>
               <th>Material</th>
-              <th>Supplier</th>
+              <th>Customer</th>
+              <th>Price</th>
               <th>Qty</th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.map((r,i)=>(
+            {filtered.map((r, i) => (
               <tr key={r.id}>
-                <td>{i+1}</td>
-                <td>{r.date}</td>
-                <td>{r.reference}</td>
 
-                {/* ✅ Click to Edit */}
+                <td>{i + 1}</td>
+                <td>{r.date}</td>
+
                 <td
-                  style={{cursor:"pointer", color:"blue", textDecoration:"underline"}}
-                  onClick={()=>editStock(r)}
+                  onClick={() => editStock(r)}
+                  style={{ color: "blue", cursor: "pointer", fontWeight: "bold" }}
                 >
                   {r.materialCode}
                 </td>
 
                 <td>{r.materialName}</td>
-                <td>{r.supplierName}</td>
+                <td>{r.customer}</td>
+                <td>{r.price}</td>
                 <td>{r.qty}</td>
 
               </tr>
@@ -245,4 +248,4 @@ function StockOut() {
   );
 }
 
-export default StockOut;
+export default VeoliaStockOut;

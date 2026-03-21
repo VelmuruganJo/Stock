@@ -6,19 +6,19 @@ function Sidebar(){
 
 const [veoliaOpen, setVeoliaOpen] = useState(false);
 
-const logout = () => {
-  localStorage.removeItem("token");
-  sessionStorage.removeItem("token");
-  window.location = "/login";
-};
+// const logout = () => {
+//   localStorage.removeItem("token");
+//   sessionStorage.removeItem("token");
+//   window.location = "/login";
+// };
 
 return(
 
 <div className="sidebar">
 
-<div className="logo">
+{/* <div className="logo">
 <h3>OTSIL ERP</h3>
-</div>
+</div> */}
 
 <ul className="menu">
 
@@ -101,12 +101,12 @@ STOCK
 
 </ul>
 
-<div className="logout-area"><button
+{/* <div className="logout-area"><button
 className="logout-btn"
 onClick={logout}
 >
 Logout
-</button></div>
+</button></div> */}
 
 </div>
 

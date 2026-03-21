@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from '../img/websitebanner-career.jpg';
 
 function Login(){
 
@@ -30,12 +31,13 @@ function Login(){
     } else {
       setError("Invalid username or password");
     }
-      
   }
 
   return(
 
     <div style={styles.container}>
+
+      <div style={styles.overlay}></div>
 
       <div style={styles.card}>
 
@@ -45,7 +47,7 @@ function Login(){
           style={styles.logo}
         />
 
-        <h2>Ozone Tech</h2>
+        <h2>Ozone Technologies</h2>
 
         {error && <div style={styles.error}>{error}</div>}
 
@@ -106,67 +108,100 @@ function Login(){
 const styles = {
 
 container:{
-height:"100vh",
-display:"flex",
-justifyContent:"center",
-alignItems:"center",
-background:"linear-gradient(135deg,#4facfe,#00f2fe)"
+  height:"100vh",
+  display:"flex",
+  justifyContent:"center",
+  alignItems:"center",
+
+  backgroundImage: `url(${logo})`,
+  backgroundSize:"cover",
+  backgroundPosition:"center",
+  backgroundRepeat:"no-repeat",
+
+  position:"relative"
 },
 
+// 🌑 Gradient overlay (more premium look)
+overlay:{
+  position:"absolute",
+  top:0,
+  left:0,
+  width:"100%",
+  height:"100%",
+  background:"linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,100,200,0.4))",
+  backdropFilter:"blur(3px)"
+},
+
+// 💎 Glass Card
 card:{
-background:"#fff",
-padding:"40px",
-borderRadius:"10px",
-width:"320px",
-textAlign:"center",
-boxShadow:"0 10px 30px rgba(0,0,0,0.2)"
+  position:"relative",
+  zIndex:1,
+  background:"rgba(255,255,255,0.12)",
+  padding:"40px",
+  borderRadius:"15px",
+  width:"390px",
+  textAlign:"center",
+
+  backdropFilter:"blur(12px)",
+  WebkitBackdropFilter:"blur(12px)",
+
+  border:"1px solid rgba(255,255,255,0.2)",
+  boxShadow:"0 8px 40px rgba(0,0,0,0.4)"
 },
 
 logo:{
-width:"70px",
-marginBottom:"10px"
+  width:"70px",
+  marginBottom:"10px",
+  borderRadius:"50%",
+  border:"2px solid white"
 },
 
+// ✨ Better Inputs
 input:{
-width:"100%",
-padding:"10px",
-margin:"10px 0",
-border:"1px solid #ccc",
-borderRadius:"5px"
+  width:"100%",
+  padding:"12px",
+  margin:"10px 0",
+  border:"none",
+  borderRadius:"8px",
+  outline:"none",
+  background:"rgba(255,255,255,0.9)",
+  fontSize:"14px"
 },
 
+// 🔥 Gradient Button
 button:{
-width:"100%",
-padding:"10px",
-background:"#4facfe",
-color:"#fff",
-border:"none",
-borderRadius:"5px",
-cursor:"pointer"
+  width:"100%",
+  padding:"12px",
+  background:"linear-gradient(135deg, #4facfe, #00f2fe)",
+  color:"#fff",
+  border:"none",
+  borderRadius:"8px",
+  cursor:"pointer",
+  fontWeight:"bold",
+  transition:"0.3s"
 },
 
 eye:{
-position:"absolute",
-right:"10px",
-top:"15px",
-cursor:"pointer"
+  position:"absolute",
+  right:"10px",
+  top:"18px",
+  cursor:"pointer"
 },
 
 remember:{
-display:"flex",
-alignItems:"center",
-gap:"5px",
-marginBottom:"10px"
+  display:"flex",
+  alignItems:"center",
+  gap:"5px",
+  marginBottom:"10px",
+  color:"#fff"
 },
 
 error:{
-background:"#ffdddd",
-color:"#d8000c",
-padding:"8px",
-marginBottom:"10px",
-borderRadius:"5px"
+  background:"rgba(255,0,0,0.2)",
+  color:"#fff",
+  padding:"8px",
+  marginBottom:"10px",
+  borderRadius:"5px"
 }
-
 };
-
 export default Login;

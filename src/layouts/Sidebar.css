@@ -6,7 +6,8 @@
   position:fixed;
   left:0;
   top:0;
-  padding:20px;
+  padding:20px; 
+
 }
 
 .logo{
@@ -22,7 +23,7 @@
 }
 
 .menu li{
-  margin:8px 0;
+  margin:3px 0;
 }
 
 .menu li a{
@@ -49,9 +50,9 @@
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
 }
 
-.logout-area{
+/* .logout-area{
   margin-top:40px;
-}
+} */
 
 .logout-btn{
   width:100%;

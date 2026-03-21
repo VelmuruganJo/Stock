@@ -1,9 +1,10 @@
 /* ===== PAGE ===== */
 .stock-page{
-  padding:20px;
+  /* padding right: -80px; */
   font-family:Arial, sans-serif;
   background:#f4f6f9;
   min-height:100vh;
+  /* margin-top: 10px; */
 }
 
 h2{
@@ -114,7 +115,7 @@ h2{
 .material-form,
 .stock-form{
   background:white;
-  padding:20px;
+  padding:5px;
   border-radius:10px;
   box-shadow:0 2px 10px rgba(0,0,0,0.1);
   margin-bottom:20px;
@@ -153,6 +154,7 @@ h2{
 .stock-table td{
   padding:10px;
   border-bottom:1px solid #eee;
+  /* width:50px; */
 }
 
 .material-table tbody tr:hover,
@@ -175,42 +177,9 @@ td[colspan]{
   color:red;
 }
 
-/* ===== DARK MODE ===== */
-.dark{
-  background:#1e1e1e;
-  color:white;
-}
-
-.dark .material-form,
-.dark .stock-form,
-.dark .table-container{
-  background:#2c2c2c;
-}
-
-.dark .form-input{
-  background:#3a3a3a;
-  color:white;
-  border:1px solid #555;
-}
-
-.dark .material-table,
-.dark .stock-table{
-  color:white;
-}
-
-.dark .material-table thead th,
-.dark .stock-table thead th{
-  background:#111;
-}
-
-.dark .material-table tbody tr:hover,
-.dark .stock-table tbody tr:hover{
-  background:#3a3a3a;
-}
-
 .stock-page{
-margin-left:220px;
+margin-left:205px;
 /* padding:50px; */
 padding-top: 70PX;
-width:calc(100% - 220px);
+width:calc(102.5% - 220px);
 }

@@ -26,7 +26,6 @@ function StockIn() {
     setFiltered(res.data || []);
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(()=>{ loadStock(); },[]);
 
   const handleSearch = (val) => {
@@ -96,30 +95,28 @@ function StockIn() {
   };
 
   const resetForm = () => {
-  setDate("");
-  setMaterialCode("");
-  setMaterialName("");
-  setSupplierName("");
-  setPrice("");
-  setQty("");
-  setEditId(null);
-  setShowForm(false);
-};
+    setDate("");
+    setMaterialCode("");
+    setMaterialName("");
+    setSupplierName("");
+    setPrice("");
+    setQty("");
+    setEditId(null);
+    setShowForm(false);
+  };
 
   const editStock = (r) => {
     setEditId(r.id);
     setShowForm(true);
+
     setDate(r.date);
     setMaterialCode(r.materialCode);
     setMaterialName(r.materialName);
     setSupplierName(r.supplierName);
     setPrice(r.price);
     setQty(r.qty);
-  };
 
-  const deleteStock = async (id) => {
-    await API.delete(`/stockin/${id}`);
-    loadStock();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -184,14 +181,12 @@ function StockIn() {
           <thead>
             <tr>
               <th>SlNo</th>
-              <th>Date</th>
-              <th>Code</th>
-              <th>Material</th>
+              <th>Inword Date</th>
+              <th>Material Code</th>
+              <th>Description</th>
               <th>Supplier</th>
               <th>Price</th>
               <th>Qty</th>
-              <th>Edit</th>
-              <th>Delete</th>
             </tr>
           </thead>
 
@@ -200,19 +195,19 @@ function StockIn() {
               <tr key={r.id}>
                 <td>{i+1}</td>
                 <td>{r.date}</td>
-                <td>{r.materialCode}</td>
+
+                <td
+                  style={{cursor:"pointer", color:"blue", textDecoration:"underline"}}
+                  onClick={()=>editStock(r)}
+                >
+                  {r.materialCode}
+                </td>
+
                 <td>{r.materialName}</td>
                 <td>{r.supplierName}</td>
                 <td>{r.price}</td>
                 <td>{r.qty}</td>
 
-                <td>
-                  <button className="btn-save" onClick={()=>editStock(r)}>Edit</button>
-                </td>
-
-                <td>
-                  <button className="btn-delete" onClick={()=>deleteStock(r.id)}>Delete</button>
-                </td>
               </tr>
             ))}
           </tbody>
