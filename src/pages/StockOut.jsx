@@ -224,12 +224,9 @@ function StockOut() {
                 <td>{r.reference}</td>
 
                 {/* ✅ Click to Edit */}
-                <td
-                  style={{cursor:"pointer", color:"blue", textDecoration:"underline"}}
-                  onClick={()=>editStock(r)}
-                >
-                  {r.materialCode}
-                </td>
+                <td style={{cursor: "pointer",color: "#4f46e5",fontWeight: "600"}}
+                onClick={() => editStock(r)}>
+                  {r.materialCode}</td>
 
                 <td>{r.materialName}</td>
                 <td>{r.supplierName}</td>

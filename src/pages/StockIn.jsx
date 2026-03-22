@@ -178,7 +178,6 @@ function StockIn() {
 
       <div className="table-container">
         <table className="stock-table">
-
           <thead>
             <tr>
               <th>SlNo</th>
@@ -198,11 +197,13 @@ function StockIn() {
                 <td>{r.date}</td>
 
                 <td
-                  style={{cursor:"pointer", color:"blue", textDecoration:"underline"}}
+                  style={{cursor:"pointer", color:"blue",fontWeight: "600"}}
                   onClick={()=>editStock(r)}
                 >
                   {r.materialCode}
                 </td>
+                
+                
 
                 <td>{r.materialName}</td>
                 <td>{r.supplierName}</td>

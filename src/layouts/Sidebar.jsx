@@ -1,117 +1,75 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import { FaHome, FaBoxes, FaWarehouse, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { MdInventory } from "react-icons/md";
 import "./Sidebar.css";
 
-function Sidebar(){
+function Sidebar() {
 
-const [veoliaOpen, setVeoliaOpen] = useState(false);
+  const [veoliaOpen, setVeoliaOpen] = useState(false);
 
-// const logout = () => {
-//   localStorage.removeItem("token");
-//   sessionStorage.removeItem("token");
-//   window.location = "/login";
-// };
+  return (
+    <div className="sidebar">
 
-return(
+      <div className="logo">
+        <h2>OTSIL ERP</h2>
+      </div>
 
-<div className="sidebar">
+      <ul className="menu">
 
-{/* <div className="logo">
-<h3>OTSIL ERP</h3>
-</div> */}
+        <li>
+          <NavLink to="/" end>
+            <FaHome /> <span>Dashboard</span>
+          </NavLink>
+        </li>
 
-<ul className="menu">
+        <li>
+          <NavLink to="/materials">
+            <FaBoxes /> <span>Materials</span>
+          </NavLink>
+        </li>
 
-<li>
-<NavLink to="/" end>
-Dashboard
-</NavLink>
-</li>
+        <li>
+          <NavLink to="/stock">
+            <FaWarehouse /> <span>Current Stock</span>
+          </NavLink>
+        </li>
 
-<li>
-<NavLink to="/materials">
-Materials
-</NavLink>
-</li>
+        <li>
+          <NavLink to="/stockin">
+            <FaArrowDown /> <span>Stock In</span>
+          </NavLink>
+        </li>
 
-{/* <li>
-<NavLink to="/uploadmaterials">
-Upload Materials
-</NavLink>
-</li> */}
+        <li>
+          <NavLink to="/stockout">
+            <FaArrowUp /> <span>Stock Out</span>
+          </NavLink>
+        </li>
 
-<li>
-<NavLink to="/stock">
-Current Stock
-</NavLink>
-</li>
+        {/* VEOLIA */}
+        <li>
+          <div 
+            className="dropdown-title"
+            onClick={() => setVeoliaOpen(!veoliaOpen)}
+          >
+            <MdInventory /> 
+            <span>VEOLIA</span>
+            <span className={`arrow ${veoliaOpen ? "open" : ""}`}>▾</span>
+          </div>
 
-<li>
-<NavLink to="/stockin">
-Stock In
-</NavLink>
-</li>
+          <div className={`submenu ${veoliaOpen ? "show" : ""}`}>
+            <NavLink to="/veolia-material">Material</NavLink>
+            <NavLink to="/veolia-in">In</NavLink>
+            <NavLink to="/veolia-out">Out</NavLink>
+            <NavLink to="/veolia-stock">Stock</NavLink>
+          </div>
+        </li>
 
-<li>
-<NavLink to="/stockout">
-Stock Out
-</NavLink>
-</li>
+      </ul>
 
-{/* VEOLIA DROPDOWN */}
-<li>
-<div 
-className="dropdown-title"
-onClick={() => setVeoliaOpen(!veoliaOpen)}
->
-VEOLIA ▾
-</div>
-
-{veoliaOpen && (
-<ul className="submenu">
-
-<li>
-<NavLink to="/veolia-material">
-MATERIAL
-</NavLink>
-</li>
-
-<li>
-<NavLink to="/veolia-in">
-IN
-</NavLink>
-</li>
-
-<li>
-<NavLink to="/veolia-out">
-OUT
-</NavLink>
-</li>
-
-<li>
-<NavLink to="/veolia-stock">
-STOCK
-</NavLink>
-</li>
-
-</ul>
-)}
-
-</li>
-
-</ul>
-
-{/* <div className="logout-area"><button
-className="logout-btn"
-onClick={logout}
->
-Logout
-</button></div> */}
-
-</div>
-
-)
-
+    </div>
+  );
 }
 
 export default Sidebar;

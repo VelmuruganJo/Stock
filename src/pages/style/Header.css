@@ -1,30 +1,78 @@
 .app-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-background:#2c3e50;
-color:white;
-padding:12px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 
-/* FIXED HEADER */
-position:fixed;
-top:0;
-left:220px;   /* sidebar width */
-right:0;
-height:60px;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.7);
 
-z-index:1000;
+  padding:12px 25px;
+
+  position:fixed;
+  top:0;
+  left:240px;
+  right:0;
+  height:65px;
+
+  border-bottom:1px solid rgba(0,0,0,0.08);
+  box-shadow:0 4px 20px rgba(0,0,0,0.05);
+
+  z-index:1000;
 }
 
+/* LOGO */
 .logo{
-font-size:20px;
-font-weight:bold;
-font-family:sans-serif;
-padding-top: 30PX;
-/* text-shadow: 2px 2px 4px #0fd1df; */
-color: #ffffff;
+  font-size:18px;
+  font-weight:600;
+  color:#1e293b;
+  padding-top: 25px;
 }
 
+/* RIGHT SIDE */
 .header-right{
-font-size:14px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+/* USER INFO */
+.user-info{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:#334155;
+}
+
+/* AVATAR */
+.avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color:white;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:bold;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color:white;
+
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.logout-btn:hover{
+  transform: translateY(-2px);
+  box-shadow:0 6px 15px rgba(239,68,68,0.3);
 }
