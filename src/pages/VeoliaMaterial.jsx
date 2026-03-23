@@ -17,6 +17,13 @@ function VeoliaMaterial() {
   const [editCode, setEditCode] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
+  const formatPrice = (value) => {
+  if (!value && value !== 0) return "";
+  return Number(value).toLocaleString("en-IN");
+};
+
+  // ✅ CSV FILE STATE
+  const [file, setFile] = useState(null);
 
   // LOAD DATA
   const loadData = async () => {
@@ -29,7 +36,6 @@ function VeoliaMaterial() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -38,7 +44,6 @@ function VeoliaMaterial() {
     const sorted = [...records].sort((a, b) =>
       (a.category || "").localeCompare(b.category || "")
     );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredRecords(sorted);
   }, [records]);
 
@@ -71,6 +76,7 @@ function VeoliaMaterial() {
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
+    
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "VeoliaMaterials");
@@ -85,6 +91,30 @@ function VeoliaMaterial() {
     });
 
     saveAs(file, "VeoliaMaterials.xlsx");
+  };
+
+  // ✅ CSV UPLOAD FUNCTION
+  const handleFileUpload = async () => {
+    if (!file) {
+      alert("Please select a CSV file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await API.post("/Veoliamaterials/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      alert("CSV Uploaded Successfully");
+      setFile(null);
+      loadData();
+    } catch (err) {
+      console.error(err);
+      alert("Upload Failed");
+    }
   };
 
   // SAVE / UPDATE
@@ -121,6 +151,7 @@ function VeoliaMaterial() {
     setCategory("");
     setPrice("");
     setShowForm(false);
+    setFile(null);
   };
 
   // EDIT
@@ -151,7 +182,7 @@ function VeoliaMaterial() {
 
       <h2>Veolia Material</h2>
 
-      {/* ✅ TOP BAR ALWAYS VISIBLE */}
+      {/* TOP BAR */}
       <div className="top-bar">
 
         <button
@@ -175,7 +206,7 @@ function VeoliaMaterial() {
 
       </div>
 
-      {/* ✅ FORM BELOW TOP BAR */}
+      {/* FORM */}
       {showForm && (
         <form className="material-form" onSubmit={handleSubmit}>
 
@@ -226,6 +257,28 @@ function VeoliaMaterial() {
             Cancel
           </button>
 
+          {/* ✅ CSV UPLOAD SECTION */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center",width:"500px" }}>
+
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+
+            <button
+              type="button"
+              className="btn-save"
+              onClick={handleFileUpload}
+              disabled={!file}
+            >
+              Upload CSV
+            </button>
+
+            {file && <span>{file.name}</span>}
+
+          </div>
+
         </form>
       )}
 
@@ -235,7 +288,7 @@ function VeoliaMaterial() {
 
           <thead>
             <tr>
-              <th>SlNo</th>
+              <th>Sl No</th>
               <th>Material Code</th>
               <th>Description</th>
               <th>Category</th>
@@ -264,7 +317,7 @@ function VeoliaMaterial() {
 
                   <td>{r.itemName}</td>
                   <td>{r.category}</td>
-                  <td>{r.price}</td>
+                  <td>Rs {formatPrice(r.price)}</td>
 
                   <td>
                     <button

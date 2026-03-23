@@ -225,7 +225,7 @@ function VeoliaStockIn() {
 
           <thead>
             <tr>
-              <th>Sl.No</th>
+              <th>Sl No</th>
               <th>Date</th>
               <th>PO No</th>
               <th>Invoice No</th>

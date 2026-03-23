@@ -206,7 +206,7 @@ function StockOut() {
 
           <thead>
             <tr>
-              <th>SlNo</th>
+              <th>Sl No</th>
               <th>Date</th>
               <th>Reference</th> 
               <th>Code</th>

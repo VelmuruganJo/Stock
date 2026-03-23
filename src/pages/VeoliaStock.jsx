@@ -89,7 +89,7 @@ function VeoliaStock() {
 
         <thead>
           <tr>
-            <th>Sl.No</th>
+            <th>Sl No</th>
             <th>Material Code</th>
             <th>Description</th>
             <th>Available Stock</th>

@@ -180,8 +180,8 @@ function StockIn() {
         <table className="stock-table">
           <thead>
             <tr>
-              <th>SlNo</th>
-              <th>Inword Date</th>
+              <th>Sl No</th>
+              <th>Inward Date</th>
               <th>Material Code</th>
               <th>Description</th>
               <th>Supplier</th>

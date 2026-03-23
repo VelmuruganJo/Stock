@@ -208,8 +208,8 @@ function VeoliaStockOut() {
         <table className="stock-table">
 
           <thead>
-            <tr>
-              <th>SlNo</th>
+            <tr> 
+              <th>Sl No</th>
               <th>Date</th>
               <th>Material Code</th>
               <th>Material</th>

@@ -207,7 +207,7 @@ function Materials() {
 
           <thead>
             <tr>
-              <th>SlNo</th>
+              <th>Sl No</th>
               <th>Material Code</th>
               <th>Item Name</th>
               <th>Make</th>
