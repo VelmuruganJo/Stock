@@ -65,6 +65,12 @@ function Sidebar() {
             <NavLink to="/veolia-stock">Stock</NavLink>
           </div>
         </li>
+        <li>
+          <NavLink to="/Bankstock">
+            <FaWarehouse /> <span>Bank Stock</span>
+          </NavLink>
+        </li>
+
 
       </ul>
 

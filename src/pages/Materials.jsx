@@ -7,7 +7,7 @@ import "./style/common.css";
 function Materials() {
 
   const [materialCode,setMaterialCode] = useState("");
-  const [itemName,setItemName] = useState("");
+  const [materialName,setMaterialName] = useState("");
   const [make,setMake] = useState("");
   const [vendor,setVendor] = useState("");
   const [category,setCategory] = useState("");
@@ -65,7 +65,7 @@ function Materials() {
     const data = filteredRecords.map((r, index) => ({
       "Sl No": index + 1,
       "Material Code": r.materialCode,
-      "Item Name": r.itemName,
+      "Material Name": r.MaterialName,
       "Make": r.make,
       "Vendor": r.vendor,
       "Category": r.category,
@@ -86,7 +86,7 @@ function Materials() {
     e.preventDefault();
 
     const data = {
-      materialCode,itemName,make,vendor,category,price,uom
+      materialCode,materialName,make,vendor,category,price,uom
     };
 
     try{
@@ -108,7 +108,7 @@ function Materials() {
   // RESET
   const resetForm = () => {
     setMaterialCode("");
-    setItemName("");
+    setMaterialName("");
     setMake("");
     setVendor("");
     setCategory("");
@@ -123,7 +123,7 @@ function Materials() {
     setShowForm(true);
 
     setMaterialCode(r.materialCode || "");
-    setItemName(r.itemName || "");
+    setMaterialName(r.materialName || "");
     setMake(r.make || "");
     setVendor(r.vendor || "");
     setCategory(r.category || "");
@@ -147,7 +147,7 @@ function Materials() {
       {/* TOP BAR ALWAYS VISIBLE */}
       <div className="top-bar">
 
-        <button className="btn-add" onClick={()=>setShowForm(!showForm)}>
+        <button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
           {showForm ? "Close Form" : "Add Material"}
         </button>
 
@@ -167,13 +167,13 @@ function Materials() {
 
       {/* FORM BELOW TOP BAR */}
       {showForm && (
-        <form className="material-form" onSubmit={handleSubmit}>
+        <form className="stock-form" onSubmit={handleSubmit}>
 
           <input type="text" placeholder="Material Code" className="form-input"
             value={materialCode} onChange={(e)=>setMaterialCode(e.target.value)} required />
 
-          <input type="text" placeholder="Item Name" className="form-input"
-            value={itemName} onChange={(e)=>setItemName(e.target.value)} required />
+          <input type="text" placeholder="Material Name" className="form-input"
+            value={materialName} onChange={(e)=>setMaterialName(e.target.value)} required />
 
           <input type="text" placeholder="Make" className="form-input"
             value={make} onChange={(e)=>setMake(e.target.value)} />
@@ -194,22 +194,18 @@ function Materials() {
             {editCode ? "Update" : "Save"}
           </button>
 
-          <button type="button" className="btn-cancel" onClick={resetForm}>
-            Cancel
-          </button>
-
         </form>
       )}
 
       {/* TABLE */}
       <div className="table-container">
-        <table className="material-table">
+        <table className="stock-table">
 
           <thead>
             <tr>
               <th>Sl No</th>
               <th>Material Code</th>
-              <th>Item Name</th>
+              <th>Material Name</th>
               <th>Make</th>
               <th>Vendor</th>
               <th>Category</th>
@@ -229,7 +225,7 @@ function Materials() {
                     {r.materialCode}
                   </td>
 
-                  <td>{r.itemName}</td>
+                  <td>{r.materialName}</td>
                   <td>{r.make}</td>
                   <td>{r.vendor}</td>
                   <td>{r.category}</td>

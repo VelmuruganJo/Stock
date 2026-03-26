@@ -134,10 +134,10 @@ function VeoliaStockIn() {
   };
 
   // DELETE
-  const deleteStock = async (id) => {
-    await API.delete(`/Veoliastockin/${id}`);
-    loadStock();
-  };
+  // const deleteStock = async (id) => {
+  //   await API.delete(`/Veoliastockin/${id}`);
+  //   loadStock();
+  // };
 
   return (
     <div className="stock-page">
@@ -147,7 +147,7 @@ function VeoliaStockIn() {
       <div className="top-bar">
 
         <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
-          Veolia In
+           {showForm ? "Close Form" :"Veolia In"}
         </button>
 
         <input
@@ -213,9 +213,9 @@ function VeoliaStockIn() {
             {editId ? "Update" : "Add"}
           </button>
 
-          <button type="button" className="btn-cancel" onClick={resetForm}>
+          {/* <button type="button" className="btn-cancel" onClick={resetForm}>
             Cancel
-          </button>
+          </button> */}
 
         </form>
       )}
@@ -233,7 +233,7 @@ function VeoliaStockIn() {
               <th>Description</th>
               <th>Price</th>
               <th>Qty</th>
-              <th>Delete</th>
+              {/* <th>Delete</th> */}
             </tr>
           </thead>
 
@@ -257,11 +257,11 @@ function VeoliaStockIn() {
                 <td>{r.price}</td>
                 <td>{r.qty}</td>
 
-                <td>
+                {/* <td>
                   <button className="btn-delete" onClick={() => deleteStock(r.id)}>
                     Delete
                   </button>
-                </td>
+                </td> */}
 
               </tr>
             ))}

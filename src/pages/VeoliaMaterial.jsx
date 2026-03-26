@@ -7,7 +7,7 @@ import "./style/common.css";
 function VeoliaMaterial() {
 
   const [materialCode, setMaterialCode] = useState("");
-  const [itemName, setItemName] = useState("");
+  const [materialName, setMaterialName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
 
@@ -36,6 +36,7 @@ function VeoliaMaterial() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -44,6 +45,7 @@ function VeoliaMaterial() {
     const sorted = [...records].sort((a, b) =>
       (a.category || "").localeCompare(b.category || "")
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredRecords(sorted);
   }, [records]);
 
@@ -70,7 +72,7 @@ function VeoliaMaterial() {
     const data = filteredRecords.map((r, index) => ({
       "Sl No": index + 1,
       "Material Code": r.materialCode,
-      "Description": r.itemName,
+      "Description": r.materialName,
       "Category": r.category,
       "Price": r.price
     }));
@@ -123,7 +125,7 @@ function VeoliaMaterial() {
 
     const data = {
       materialCode,
-      itemName,
+      materialName,
       category,
       price
     };
@@ -147,7 +149,7 @@ function VeoliaMaterial() {
   // RESET
   const resetForm = () => {
     setMaterialCode("");
-    setItemName("");
+    setMaterialName("");
     setCategory("");
     setPrice("");
     setShowForm(false);
@@ -160,22 +162,22 @@ function VeoliaMaterial() {
     setShowForm(true);
 
     setMaterialCode(r.materialCode || "");
-    setItemName(r.itemName || "");
+    setMaterialName(r.materialName || "");
     setCategory(r.category || "");
     setPrice(r.price || "");
   };
 
   // DELETE
-  const deleteMaterial = async (code) => {
-    if (!window.confirm("Delete this material?")) return;
+  // const deleteMaterial = async (code) => {
+  //   if (!window.confirm("Delete this material?")) return;
 
-    try {
-      await API.delete("/Veoliamaterials/" + code);
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  //   try {
+  //     await API.delete("/Veoliamaterials/" + code);
+  //     loadData();
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   return (
     <div className="stock-page">
@@ -186,7 +188,7 @@ function VeoliaMaterial() {
       <div className="top-bar">
 
         <button
-          className="btn-add"
+          className="stock-btn"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? "Close Form" : "Add Material"}
@@ -208,7 +210,7 @@ function VeoliaMaterial() {
 
       {/* FORM */}
       {showForm && (
-        <form className="material-form" onSubmit={handleSubmit}>
+        <form className="stock-form" onSubmit={handleSubmit}>
 
           <input
             type="text"
@@ -221,10 +223,10 @@ function VeoliaMaterial() {
 
           <input
             type="text"
-            placeholder="Item Name"
+            placeholder="Material Name"
             className="form-input"
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}
+            value={materialName}
+            onChange={(e) => setMaterialName(e.target.value)}
             required
           />
 
@@ -247,14 +249,6 @@ function VeoliaMaterial() {
 
           <button className="btn-save">
             {editCode ? "Update Material" : "Save Material"}
-          </button>
-
-          <button
-            type="button"
-            className="btn-cancel"
-            onClick={resetForm}
-          >
-            Cancel
           </button>
 
           {/* ✅ CSV UPLOAD SECTION */}
@@ -284,7 +278,7 @@ function VeoliaMaterial() {
 
       {/* TABLE */}
       <div className="table-container">
-        <table className="material-table">
+        <table className="stock-table">
 
           <thead>
             <tr>
@@ -293,7 +287,7 @@ function VeoliaMaterial() {
               <th>Description</th>
               <th>Category</th>
               <th>Price</th>
-              <th>Delete</th>
+              {/* <th>Delete</th> */}
             </tr>
           </thead>
 
@@ -315,18 +309,18 @@ function VeoliaMaterial() {
                     {r.materialCode}
                   </td>
 
-                  <td>{r.itemName}</td>
+                  <td>{r.materialName}</td>
                   <td>{r.category}</td>
                   <td>Rs {formatPrice(r.price)}</td>
 
-                  <td>
+                  {/* <td>
                     <button
                       className="btn-delete"
                       onClick={() => deleteMaterial(r.materialCode)}
                     >
                       Delete
                     </button>
-                  </td>
+                  </td> */}
 
                 </tr>
               ))
