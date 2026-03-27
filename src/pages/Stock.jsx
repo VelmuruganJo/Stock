@@ -44,7 +44,7 @@ function Stock() {
       "Sl No": i + 1,
       "Material Code": s.materialCode,
       "Description": s.materialName,
-      "Make": s.make,
+      // "Make": s.make,
       "Stock": s.currentStock
     }));
 
@@ -82,7 +82,7 @@ function Stock() {
             <th>Sl No</th>
             <th>Material Code</th>
             <th>Description</th>
-            <th>Make</th>
+            {/* <th>Make</th> */}
             <th>Stock</th>
           </tr>
         </thead>
@@ -95,7 +95,7 @@ function Stock() {
                 <td>{i + 1}</td>
                 <td>{s.materialCode}</td>
                 <td>{s.materialName}</td>
-                <td>{s.make}</td>
+                {/* <td>{s.make}</td> */}
                 <td>{s.currentStock}</td>
               </tr>
             ))

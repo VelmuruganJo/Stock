@@ -70,7 +70,7 @@ function StockOut() {
       const res = await API.get(`/materials/search/${materialCode}`);
       const d = res.data || {};
 
-      setMaterialName(d.itemName || "");
+      setMaterialName(d.materialName || "");
       setSupplierName(d.vendor || "");
     } catch {
       alert("Material Not Found");

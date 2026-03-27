@@ -74,7 +74,7 @@ function VeoliaStockOut() {
       const res = await API.get(`/Veoliamaterials/search/${materialCode}`);
       const d = res.data || {};
 
-      setMaterialName(d.itemName || "");
+      setMaterialName(d.materialName || "");
       setPrice(d.price || "");
     } catch {
       alert("Material Not Found");

@@ -10,7 +10,7 @@ function StockIn() {
   const [date, setDate] = useState("");
   const [materialCode, setMaterialCode] = useState("");
   const [materialName, setMaterialName] = useState("");
-  const [supplierName, setSupplierName] = useState("");
+  const [vendor, setVendor] = useState("");
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState("");
   const [records, setRecords] = useState([]);
@@ -32,7 +32,7 @@ function StockIn() {
       const res = await API.get(`/materials/search/${materialCode}`);
       const d = res.data || {};
       setMaterialName(d.materialName || ""); // ✅ match backend field
-      setSupplierName(d.vendor || "");
+      setVendor(d.vendor || "");
       setPrice(d.price || 0);
     } catch {
       alert("Material Not Found");
@@ -54,7 +54,7 @@ function StockIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = { date, materialCode, materialName, supplierName, price, qty: parseFloat(qty) };
+    const data = { date, materialCode, materialName, vendor, price, qty: parseFloat(qty) };
 
     if (editId) {
       await API.put(`/stockin/${editId}`, data);
@@ -68,14 +68,14 @@ function StockIn() {
   };
 
   const resetForm = () => {
-    setDate(""); setMaterialCode(""); setMaterialName(""); setSupplierName("");
+    setDate(""); setMaterialCode(""); setMaterialName(""); setVendor("");
     setPrice(""); setQty(""); setEditId(null); setShowForm(false);
   };
 
   const editStock = (r) => {
     setEditId(r.id); setShowForm(true);
     setDate(r.date); setMaterialCode(r.materialCode); setMaterialName(r.materialName);
-    setSupplierName(r.supplierName); setPrice(r.price); setQty(r.qty);
+    setVendor(r.vendor); setPrice(r.price); setQty(r.qty);
   };
 
   const exportExcel = () => {
@@ -84,7 +84,7 @@ function StockIn() {
       "Date": r.date,
       "Material Code": r.materialCode,
       "Material": r.materialName,
-      "Supplier": r.supplierName,
+      "vendor": r.vendor,
       "Price": r.price,
       "Qty": r.qty
     }));
@@ -143,7 +143,7 @@ function StockIn() {
         </button>
 
         <input className="form-input" type="text" value={materialName} readOnly />
-        <input className="form-input" type="text" value={supplierName} readOnly />
+        <input className="form-input" type="text" value={vendor} readOnly />
         <input className="form-input" type="number" value={price} readOnly />
 
         <input
@@ -176,7 +176,7 @@ function StockIn() {
             <th>Date</th>
             <th>Material Code</th>
             <th>Description</th>
-            <th>Supplier</th>
+            <th>vendor</th>
             <th>Price</th>
             <th>Qty</th>
           </tr>
@@ -195,7 +195,7 @@ function StockIn() {
                 </td>
 
                 <td>{r.materialName}</td>
-                <td>{r.supplierName}</td>
+                <td>{r.vendor}</td>
                 <td>{r.price}</td>
                 <td>{r.qty}</td>
 
