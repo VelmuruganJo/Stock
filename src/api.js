@@ -3,7 +3,7 @@ import axios from "axios";
 const BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:8080/api"
-    : "http://192.168.1.9:8080/api"; // change to your server IP
+    : "http://192.168.1.77:8080/api"; // change to your server IP
 
 const API = axios.create({
   baseURL: BASE_URL
