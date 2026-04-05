@@ -95,6 +95,12 @@ function StockIn() {
     saveAs(new Blob([buf]),"StockIn.xlsx");
   };
 
+    // DELETE
+  const deleteStock = async (id) => {
+    await API.delete(`/stockin/${id}`);
+    loadStock();
+  };
+
   return (
   <div className="stock-page">
 
@@ -179,6 +185,7 @@ function StockIn() {
             <th>vendor</th>
             <th>Price</th>
             <th>Qty</th>
+            <th>Delete</th>
           </tr>
         </thead>
 
@@ -196,8 +203,19 @@ function StockIn() {
 
                 <td>{r.materialName}</td>
                 <td>{r.vendor}</td>
-                <td>{r.price}</td>
+                <td>₹ {r.price?.toFixed(2)}</td>
                 <td>{r.qty}</td>
+                <td>
+                    <button
+                      className="btn-cancel"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteStock(r.id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
 
               </tr>
             ))

@@ -132,11 +132,11 @@ function Materials() {
   };
 
   // DELETE
-  // const deleteMaterial = async (code) => {
-  //   if(!window.confirm("Delete?")) return;
-  //   await API.delete("/materials/" + code);
-  //   loadData();
-  // };
+  const deleteMaterial = async (code) => {
+    if(!window.confirm("Delete?")) return;
+    await API.delete("/materials/" + code);
+    loadData();
+  };
 
   return (
 
@@ -211,7 +211,7 @@ function Materials() {
               <th>Category</th>
               <th>UOM</th>
               <th>Price</th>
-              {/* <th>Delete</th> */}
+              <th>Delete</th>
             </tr>
           </thead>
 
@@ -230,13 +230,13 @@ function Materials() {
                   <td>{r.vendor}</td>
                   <td>{r.category}</td>
                   <td>{r.uom}</td>
-                  <td>Rs.{r.price}</td>
+                  <td>₹ {r.price?.toFixed(2)}</td>
 
-                  {/* <td>
-                    <button className="btn-delete" onClick={()=>deleteMaterial(r.materialCode)}>
+                  <td>
+                    <button className="btn-cancel" onClick={()=>deleteMaterial(r.materialCode)}>
                       Delete
                     </button>
-                  </td> */}
+                  </td>
                 </tr>
               ))
             ) : (

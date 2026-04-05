@@ -1,25 +1,27 @@
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import "./style/common.css";
 import API from "../api";
+import "./style/common.css";
 
 function StockOut() {
 
-  const [showForm,setShowForm]=useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [date,setDate]=useState("");
-  const [materialCode,setMaterialCode]=useState("");
-  const [materialName,setMaterialName]=useState("");
-  const [supplierName,setSupplierName]=useState("");
-  const [reference,setReference]=useState(""); // ✅ changed from price
-  const [qty,setQty]=useState("");
+  const [date, setDate] = useState("");
+  const [materialCode, setMaterialCode] = useState("");
+  const [materialName, setMaterialName] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [reference, setReference] = useState("");
+  const [price, setPrice] = useState("");
+  const [qty, setQty] = useState("");
 
-  const [records,setRecords]=useState([]);
-  const [filtered,setFiltered]=useState([]);
-  const [search,setSearch]=useState("");
-  const [editId,setEditId]=useState(null);
+  const [records, setRecords] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editId, setEditId] = useState(null);
 
+  // LOAD
   const loadStock = async () => {
     const res = await API.get("/stockout");
     setRecords(res.data || []);
@@ -27,34 +29,107 @@ function StockOut() {
   };
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(()=>{ loadStock(); },[]);
+  useEffect(() => { loadStock(); }, []);
 
-  const handleSearch = (val) => {
-    setSearch(val);
+  // 🔥 AUTO FILL
+  const searchMaterial = async () => {
+    try {
+      const res = await API.get(`/materials/search/${materialCode}`);
+      const d = res.data || {};
 
-    if(val===""){
-      setFiltered(records);
-      return;
+      setMaterialName(d.materialName || "");
+      setVendor(d.vendor || "");
+      setPrice(d.price || 0);
+
+    } catch {
+      alert("Material Not Found");
     }
-
-    const f = records.filter(r =>
-      Object.values(r).some(v =>
-        String(v).toLowerCase().includes(val.toLowerCase())
-      )
-    );
-
-    setFiltered(f);
   };
 
+  // SEARCH FILTER
+  useEffect(() => {
+    if (search === "") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFiltered(records);
+    } else {
+      const f = records.filter(r =>
+        Object.values(r).some(v =>
+          String(v).toLowerCase().includes(search.toLowerCase())
+        )
+      );
+      setFiltered(f);
+    }
+  }, [search, records]);
+
+  // SAVE / UPDATE
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = {
+      date,
+      materialCode,
+      materialName,
+      vendor,
+      reference,
+      price,
+      qty: parseFloat(qty)
+    };
+
+    if (editId) {
+      await API.put(`/stockout/${editId}`, data);
+      setEditId(null);
+    } else {
+      await API.post("/stockout", data);
+    }
+
+    resetForm();
+    loadStock();
+  };
+
+  const resetForm = () => {
+    setDate("");
+    setMaterialCode("");
+    setMaterialName("");
+    setVendor("");
+    setReference("");
+    setPrice("");
+    setQty("");
+    setEditId(null);
+    setShowForm(false);
+  };
+
+  // EDIT
+  const editStock = (r) => {
+    setEditId(r.id);
+    setShowForm(true);
+
+    setDate(r.date);
+    setMaterialCode(r.materialCode);
+    setMaterialName(r.materialName);
+    setVendor(r.vendor);
+    setReference(r.reference);
+    setPrice(r.price);
+    setQty(r.qty);
+  };
+
+  // DELETE
+  const deleteStock = async (id) => {
+    await API.delete(`/stockout/${id}`);
+    loadStock();
+  };
+
+  // EXPORT
   const exportExcel = () => {
     const data = filtered.map((r,i)=>({
-      "SlNo":i+1,
-      "Date":r.date,
-      "Material Code":r.materialCode,
-      "Material":r.materialName,
-      "Supplier":r.supplierName,
-      "Reference":r.reference,
-      "Qty":r.qty
+      "SlNo": i+1,
+      "Date": r.date,
+      "Material Code": r.materialCode,
+      "Material": r.materialName,
+      "Vendor": r.vendor,
+      "Reference": r.reference,
+      "Price": r.price,
+      "Qty": r.qty,
+      "Total": r.qty * r.price
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -65,92 +140,26 @@ function StockOut() {
     saveAs(new Blob([buf]),"StockOut.xlsx");
   };
 
-  const searchMaterial = async () => {
-    try {
-      const res = await API.get(`/materials/search/${materialCode}`);
-      const d = res.data || {};
-
-      setMaterialName(d.materialName || "");
-      setSupplierName(d.vendor || "");
-    } catch {
-      alert("Material Not Found");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const data = {
-      date,
-      materialCode,
-      materialName,
-      supplierName,
-      reference, // ✅ send reference
-      qty
-    };
-
-    try {
-      if (editId) {
-        await API.put(`/stockout/${editId}`, data);
-        setEditId(null);
-      } else {
-        await API.post("/stockout", data);
-      }
-
-      alert("Saved successfully");
-
-    } catch (err) {
-      if (err.response && err.response.status === 400) {
-        alert(err.response.data || "Not enough stock!");
-      } else {
-        alert("Something went wrong!");
-      }
-    }
-
-    resetForm();
-    setShowForm(false);
-    loadStock();
-  };
-
-  const resetForm = () => {
-    setDate("");
-    setMaterialCode("");
-    setMaterialName("");
-    setSupplierName("");
-    setReference("");
-    setQty("");
-    setEditId(null);
-    setShowForm(false);
-  };
-
-  const editStock = (r) => {
-    setEditId(r.id);
-    setShowForm(true);
-
-    setDate(r.date);
-    setMaterialCode(r.materialCode);
-    setMaterialName(r.materialName);
-    setSupplierName(r.supplierName);
-    setReference(r.reference || "");
-    setQty(r.qty);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  // GRAND TOTAL
+  const grandTotal = filtered.reduce(
+    (sum, r) => sum + (r.qty * r.price), 0
+  );
 
   return (
     <div className="stock-page">
 
       <h2>Stock Out</h2>
 
+      {/* TOP BAR */}
       <div className="top-bar">
-        <button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
-          Stock Out
+        <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
+          {showForm ? "Close Form" : "+ Stock Out"}
         </button>
 
         <input
           placeholder="Search..."
           value={search}
-          onChange={e=>handleSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           className="search-input"
         />
 
@@ -159,35 +168,42 @@ function StockOut() {
         </button>
       </div>
 
+      {/* FORM */}
       {showForm && (
         <form className="stock-form" onSubmit={handleSubmit}>
 
-          <input className="form-input" type="date" value={date} onChange={(e)=>setDate(e.target.value)} required/>
+          <input className="form-input" type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            required
+          />
 
-          <input className="form-input" type="text" placeholder="Material Code"
+          <input className="form-input" type="text"
+            placeholder="Material Code"
             value={materialCode}
-            onChange={(e)=>setMaterialCode(e.target.value)}
+            onChange={e => setMaterialCode(e.target.value)}
           />
 
           <button type="button" className="stock-btn" onClick={searchMaterial}>
             Search
           </button>
 
-          <input className="form-input" type="text" value={materialName} readOnly/>
-          <input className="form-input" type="text" value={supplierName} readOnly/>
+          <input className="form-input" type="text" value={materialName} readOnly />
+          <input className="form-input" type="text" value={vendor} readOnly />
 
-          {/* ✅ Manual Reference Field */}
-          <input 
-            className="form-input" 
-            type="text" 
+          <input className="form-input" type="text"
             placeholder="Reference"
             value={reference}
-            onChange={(e)=>setReference(e.target.value)}
+            onChange={e => setReference(e.target.value)}
           />
 
-          <input className="form-input" type="number" placeholder="Qty"
+          <input className="form-input" type="number" value={price} readOnly />
+
+          <input className="form-input" type="number"
+            placeholder="Qty"
             value={qty}
-            onChange={(e)=>setQty(e.target.value)} required
+            onChange={e => setQty(e.target.value)}
+            required
           />
 
           <button className="btn-save">
@@ -201,6 +217,7 @@ function StockOut() {
         </form>
       )}
 
+      {/* TABLE */}
       <div className="table-container">
         <table className="stock-table">
 
@@ -208,33 +225,66 @@ function StockOut() {
             <tr>
               <th>Sl No</th>
               <th>Date</th>
-              <th>Reference</th> 
+              <th>Reference</th>
               <th>Code</th>
               <th>Material</th>
-              <th>Supplier</th>
+              <th>Vendor</th>
+              <th>Price</th>
               <th>Qty</th>
+              <th>Total ₹</th>
+              <th>Delete</th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.map((r,i)=>(
-              <tr key={r.id}>
-                <td>{i+1}</td>
-                <td>{r.date}</td>
-                <td>{r.reference}</td>
+            {filtered.length > 0 ? (
+              filtered.map((r, i) => (
+                <tr key={r.id} onClick={() => editStock(r)}>
 
-                {/* ✅ Click to Edit */}
-                <td style={{cursor: "pointer",color: "#4f46e5",fontWeight: "600"}}
-                onClick={() => editStock(r)}>
-                  {r.materialCode}</td>
+                  <td>{i + 1}</td>
+                  <td>{r.date}</td>
+                  <td>{r.reference}</td>
 
-                <td>{r.materialName}</td>
-                <td>{r.supplierName}</td>
-                <td>{r.qty}</td>
+                  <td style={{ cursor: "pointer", color: "#4f46e5", fontWeight: 600 }}>
+                    {r.materialCode}
+                  </td>
 
+                  <td>{r.materialName}</td>
+                  <td>{r.vendor}</td>
+                  <td>₹ {r.price}</td>
+                  <td>{r.qty}</td>
+                  <td>{r.qty * r.price}</td>
+
+                  <td>
+                    <button
+                      className="btn-cancel"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteStock(r.id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="10">No Data Found</td>
               </tr>
-            ))}
+            )}
           </tbody>
+
+          <tfoot>
+            <tr>
+              <td colSpan="8" style={{textAlign:"right",fontWeight:"bold"}}>
+                Grand Total
+              </td>
+              <td style={{fontWeight:"bold"}}>₹ {grandTotal}</td>
+              <td></td>
+            </tr>
+          </tfoot>
 
         </table>
       </div>

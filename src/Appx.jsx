@@ -16,6 +16,9 @@ import VeoliaStockIn from "./pages/VeoliaStockIn.jsx";
 import VeoliaStockOut from "./pages/VeoliaStockOut.jsx";
 import VeoliaStock from "./pages/VeoliaStock.jsx";
 import BankStock from "./pages/BankStock.jsx";
+import Assets from "./pages/Assets.jsx";
+import Panel from "./pages/Panel.jsx";
+import PanelOut from "./pages/PanelOut.jsx";
 
 function Appx(){
 
@@ -47,6 +50,10 @@ return(
 <Route path="/veolia-out" element={<VeoliaStockOut />} />
 <Route path="/veolia-stock" element={<VeoliaStock />} />
 <Route path="/bankstock" element={<BankStock />} />
+<Route path="/Assets" element={<Assets />} />
+<Route path="/Panel" element={<Panel />} />
+<Route path="/panelOut" element={<PanelOut />} />
+
 
 </Routes>
 

@@ -15,74 +15,122 @@ function DashboardCard({ title, value, color }) {
 
 function Dashboard() {
 
-  const [materials, setMaterials] = useState(0);
-  const [totalStock, setTotalStock] = useState(0);
-  const [todayIn, setTodayIn] = useState(0);
-  const [todayOut, setTodayOut] = useState(0);
+  const [normalValue, setNormalValue] = useState(0);
+  const [veoliaValue, setVeoliaValue] = useState(0);
+  const [bankValue, setBankValue] = useState(0);
+
+  const [assetsValue, setAssetsValue] = useState(0);              // 🆕
+  const [factoryPanelValue, setFactoryPanelValue] = useState(0);  // 🆕
 
   const [lowStock, setLowStock] = useState([]);
   const [outStock, setOutStock] = useState([]);
 
-
   const loadDashboard = async () => {
-  try {
+    try {
 
-    // 🚀 PARALLEL API CALLS (FASTER)
-    const [matRes, stockRes, sinRes, soutRes] = await Promise.all([
-      API.get("/materials"),
-      API.get("/currentstock"),
-      API.get("/stockin"),
-      API.get("/stockout")
-    ]);
+      // 🚀 ALL API CALLS
+      const [
+        stockRes,
+        veoliaRes,
+        bankRes,
+        assetsRes,
+        panelRes
+      ] = await Promise.all([
+        API.get("/currentstock"),
+        API.get("/veolia-stock"),
+        API.get("/combined-materials/class-a"),
+        API.get("/assets"),     // 🆕
+        API.get("/panel")       // 🆕
+      ]);
 
-    const mat = matRes.data || [];
-    const stock = stockRes.data || [];
-    const sin = sinRes.data || [];
-    const sout = soutRes.data || [];
+      const stock = stockRes.data || [];
+      const veolia = veoliaRes.data || [];
+      const bank = bankRes.data || [];
+      const assets = assetsRes.data || [];
+      const panels = panelRes.data || [];
 
-    // 📊 TOTAL MATERIALS
-    setMaterials(mat.length);
+      // 💰 NORMAL STOCK
+      const normalTotal = stock.reduce(
+        (sum, s) => sum + (s.totalValue || 0),
+        0
+      );
+      setNormalValue(normalTotal);
 
-    // 📦 TOTAL STOCK
-    const total = stock.reduce((sum, s) => sum + (s.currentStock || 0), 0);
-    setTotalStock(total);
+      // 💰 VEOLIA
+      const veoliaTotal = veolia.reduce(
+        (sum, s) => sum + (s.totalValue || 0),
+        0
+      );
+      setVeoliaValue(veoliaTotal);
 
-    // 📅 TODAY DATE
-    const today = new Date().toISOString().split("T")[0];
+      // 💰 BANK
+      const bankTotal = bank.reduce(
+        (sum, s) => sum + (s.totalValue || 0),
+        0
+      );
+      setBankValue(bankTotal);
 
-    // 📥 TODAY IN
-    const inQty = sin
-      .filter(d => d.date === today)
-      .reduce((sum, d) => sum + (d.qty || 0), 0);
+      // 💰 ASSETS VALUE
+      const assetsTotal = assets.reduce(
+        (sum, a) => sum + ((a.price || 0) * (a.qty || 0)),
+        0
+      );
+      setAssetsValue(assetsTotal);
 
-    setTodayIn(inQty);
+      // 💰 OUR FACTORY PANELS VALUE
+      const factoryPanels = panels.filter(
+        p => p.status === "Our Factory"
+      );
 
-    // 📤 TODAY OUT
-    const outQty = sout
-      .filter(d => d.date === today)
-      .reduce((sum, d) => sum + (d.qty || 0), 0);
+      // 🔥 If totalValue exists
+      let factoryTotal = factoryPanels.reduce(
+        (sum, p) => sum + (p.totalValue || 0),
+        0
+      );
 
-    setTodayOut(outQty);
+      // 🔥 If totalValue NOT available → calculate from materials API
+      if (factoryTotal === 0 && factoryPanels.length > 0) {
+        const totals = await Promise.all(
+          factoryPanels.map(async (p) => {
+            try {
+              const res = await API.get(
+                `/panel/materials?panelNo=${encodeURIComponent(p.panelSerialNumber)}`
+              );
 
-    // ⚠️ LOW STOCK (<10)
-    const low = stock.filter(s =>
-      (s.currentStock || 0) > 0 && (s.currentStock || 0) < 10
-    );
-    setLowStock(low);
+              return (res.data || []).reduce(
+                (s, m) => s + ((m.qty || 0) * (m.price || 0)),
+                0
+              );
+            } catch {
+              return 0;
+            }
+          })
+        );
 
-    // ❌ OUT OF STOCK (=0)
-    const out = stock.filter(s => (s.currentStock || 0) === 0);
-    setOutStock(out);
+        factoryTotal = totals.reduce((a, b) => a + b, 0);
+      }
 
-  } catch (err) {
-    console.error("Dashboard Load Error:", err);
-  }
-};
+      setFactoryPanelValue(factoryTotal);
 
-useEffect(() => {
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  loadDashboard();
-}, []);
+      // ⚠️ LOW STOCK (<10)
+      const low = stock.filter(s =>
+        (s.currentStock || 0) > 0 && (s.currentStock || 0) < 10
+      );
+      setLowStock(low);
+
+      // ❌ OUT OF STOCK (=0)
+      const out = stock.filter(s => (s.currentStock || 0) === 0);
+      setOutStock(out);
+
+    } catch (err) {
+      console.error("Dashboard Load Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDashboard();
+  }, []);
 
   return (
     <div className="stock-page">
@@ -92,35 +140,45 @@ useEffect(() => {
       {/* ✅ KPI CARDS */}
       <div className="row g-3">
 
-        <div className="col-md-3">
+        <div className="col-md-4">
           <DashboardCard
-            title="Total Materials"
-            value={materials}
+            title="Normal Stock Value"
+            value={`₹ ${normalValue.toLocaleString("en-IN")}`}
             color="primary"
           />
         </div>
 
-        <div className="col-md-3">
+        <div className="col-md-4">
           <DashboardCard
-            title="Total Stock"
-            value={totalStock}
-            color="info"
-          />
-        </div>
-
-        <div className="col-md-3">
-          <DashboardCard
-            title="Today Stock In"
-            value={todayIn}
+            title="Veolia Stock Value"
+            value={`₹ ${veoliaValue.toLocaleString("en-IN")}`}
             color="success"
           />
         </div>
 
-        <div className="col-md-3">
+        <div className="col-md-4">
           <DashboardCard
-            title="Today Stock Out"
-            value={todayOut}
-            color="danger"
+            title="Bank Stock Value"
+            value={`₹ ${bankValue.toLocaleString("en-IN")}`}
+            color="warning"
+          />
+        </div>
+
+        {/* 🆕 ASSETS */}
+        <div className="col-md-4">
+          <DashboardCard
+            title="Assets Value"
+            value={`₹ ${assetsValue.toLocaleString("en-IN")}`}
+            color="info"
+          />
+        </div>
+
+        {/* 🆕 FACTORY PANELS */}
+        <div className="col-md-4">
+          <DashboardCard
+            title="Our Factory Panels Value"
+            value={`₹ ${factoryPanelValue.toLocaleString("en-IN")}`}
+            color="secondary"
           />
         </div>
 
@@ -131,7 +189,6 @@ useEffect(() => {
 
         {/* LOW STOCK */}
         <div className="col-md-6">
-
           <div className="card dashboard-table">
             <div className="card-body">
 
@@ -150,7 +207,9 @@ useEffect(() => {
                     lowStock.map((item, i) => (
                       <tr key={i}>
                         <td>{item.materialName}</td>
-                        <td className="danger-text">{item.currentStock}</td>
+                        <td className="danger-text">
+                          {item.currentStock}
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -164,12 +223,10 @@ useEffect(() => {
 
             </div>
           </div>
-
         </div>
 
         {/* OUT OF STOCK */}
         <div className="col-md-6">
-
           <div className="card dashboard-table">
             <div className="card-body">
 
@@ -202,7 +259,6 @@ useEffect(() => {
 
             </div>
           </div>
-
         </div>
 
       </div>

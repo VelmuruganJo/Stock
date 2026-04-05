@@ -19,7 +19,7 @@ function VeoliaMaterial() {
   const [search, setSearch] = useState("");
   const formatPrice = (value) => {
   if (!value && value !== 0) return "";
-  return Number(value).toLocaleString("en-IN");
+  return Number(value).toFixed(2);
 };
 
   // ✅ CSV FILE STATE
@@ -168,16 +168,16 @@ function VeoliaMaterial() {
   };
 
   // DELETE
-  // const deleteMaterial = async (code) => {
-  //   if (!window.confirm("Delete this material?")) return;
+  const deleteMaterial = async (code) => {
+    if (!window.confirm("Delete this material?")) return;
 
-  //   try {
-  //     await API.delete("/Veoliamaterials/" + code);
-  //     loadData();
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
+    try {
+      await API.delete("/Veoliamaterials/" + code);
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="stock-page">
@@ -287,7 +287,7 @@ function VeoliaMaterial() {
               <th>Description</th>
               <th>Category</th>
               <th>Price</th>
-              {/* <th>Delete</th> */}
+              <th>Delete</th>
             </tr>
           </thead>
 
@@ -311,16 +311,16 @@ function VeoliaMaterial() {
 
                   <td>{r.materialName}</td>
                   <td>{r.category}</td>
-                  <td>Rs {formatPrice(r.price)}</td>
+                  <td>₹ {formatPrice(r.price)}</td>
 
-                  {/* <td>
+                  <td>
                     <button
-                      className="btn-delete"
+                      className="btn-cancel"
                       onClick={() => deleteMaterial(r.materialCode)}
                     >
                       Delete
                     </button>
-                  </td> */}
+                  </td>
 
                 </tr>
               ))

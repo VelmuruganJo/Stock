@@ -134,10 +134,10 @@ function VeoliaStockIn() {
   };
 
   // DELETE
-  // const deleteStock = async (id) => {
-  //   await API.delete(`/Veoliastockin/${id}`);
-  //   loadStock();
-  // };
+  const deleteStock = async (id) => {
+    await API.delete(`/Veoliastockin/${id}`);
+    loadStock();
+  };
 
   return (
     <div className="stock-page">
@@ -233,20 +233,20 @@ function VeoliaStockIn() {
               <th>Description</th>
               <th>Price</th>
               <th>Qty</th>
-              {/* <th>Delete</th> */}
+              <th>Delete</th>
             </tr>
           </thead>
 
           <tbody>
             {filtered.map((r, i) => (
-              <tr key={r.id}>
+              <tr key={r.id} onClick={() => editStock(r)} >
 
                 <td>{i + 1}</td>
                 <td>{r.date}</td>
 
                 <td
-                  onClick={() => editStock(r)}
-                  style={{ color: "blue", cursor: "pointer", fontWeight: "bold" }}
+                  // onClick={() => editStock(r)}
+                  // style={{ color: "blue", cursor: "pointer", fontWeight: "bold" }}
                 >
                   {r.poNumber}
                 </td>
@@ -254,14 +254,20 @@ function VeoliaStockIn() {
                 <td>{r.invoiceNumber}</td>
                 <td>{r.materialCode}</td>
                 <td>{r.materialName}</td>
-                <td>{r.price}</td>
+                <td>₹ {r.price?.toFixed(2)}</td>
                 <td>{r.qty}</td>
 
-                {/* <td>
-                  <button className="btn-delete" onClick={() => deleteStock(r.id)}>
-                    Delete
-                  </button>
-                </td> */}
+                <td>
+                  <button
+                      className="btn-cancel"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteStock(r.id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                </td>
 
               </tr>
             ))}

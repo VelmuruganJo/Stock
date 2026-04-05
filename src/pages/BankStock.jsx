@@ -11,19 +11,31 @@ function BankStock() {
   const [search, setSearch] = useState("");
 
   const [currentDate, setCurrentDate] = useState("");
+  const [lastMonthDate, setLastMonthDate] = useState("");
 
   // 🔥 DATE FORMAT
   useEffect(() => {
     const today = new Date();
 
-    const formatted = today.toLocaleDateString("en-GB", {
+    const current = today.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit"
+    });
+
+    // LAST MONTH END DATE
+    const last = new Date(today.getFullYear(), today.getMonth(), 0);
+
+    const lastFormatted = last.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "2-digit"
     });
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentDate(formatted);
+    setCurrentDate(current);
+    setLastMonthDate(lastFormatted);
+
   }, []);
 
   // 🔥 LOAD DATA
@@ -54,7 +66,7 @@ function BankStock() {
     setFiltered(f);
   };
 
-  // 💰 FORMAT (₹ AUTO)
+  // 💰 FORMAT
   const formatCurrency = (value) => {
     return (value ?? 0).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
@@ -70,22 +82,25 @@ function BankStock() {
 
   // 📥 EXPORT
   const exportExcel = () => {
+
     const data = filtered.map((s, i) => ({
       "Sl No": i + 1,
       "Material Code": s.materialCode,
       "Material Name": s.materialName,
       "Price (₹)": formatCurrency(s.price),
-      [`Stock (${currentDate})`]: s.currentStock ?? 0,
+      [`Last Month Stock (${lastMonthDate})`]: s.lastMonthStock ?? 0,
+      [`Current Stock (${currentDate})`]: s.currentStock ?? 0,
       "Total Value (₹)": formatCurrency(s.totalValue)
     }));
 
-    // ADD TOTAL ROW
+    // TOTAL ROW
     data.push({
       "Sl No": "",
       "Material Code": "",
       "Material Name": "GRAND TOTAL",
       "Price (₹)": "",
-      [`Stock (${currentDate})`]: "",
+      [`Last Month Stock (${lastMonthDate})`]: "",
+      [`Current Stock (${currentDate})`]: "",
       "Total Value (₹)": formatCurrency(grandTotal)
     });
 
@@ -127,7 +142,8 @@ function BankStock() {
               <th>Material Code</th>
               <th>Material Name</th>
               <th>Price</th>
-              <th>Stock ({currentDate})</th>
+              <th>Last Month Stock ({lastMonthDate})</th>
+              <th>Current Stock ({currentDate})</th>
               <th>Total Value</th>
             </tr>
           </thead>
@@ -137,7 +153,7 @@ function BankStock() {
             {filtered.length > 0 ? (
               filtered.map((s, i) => {
 
-                const isHighValue = (s.totalValue ?? 0) > 100000; // 🔥 threshold
+                const isHighValue = (s.totalValue ?? 0) > 100000;
 
                 return (
                   <tr
@@ -150,6 +166,7 @@ function BankStock() {
                     <td>{s.materialCode}</td>
                     <td>{s.materialName}</td>
                     <td>₹ {formatCurrency(s.price)}</td>
+                    <td>{s.lastMonthStock ?? 0}</td>
                     <td>{s.currentStock ?? 0}</td>
                     <td>₹ {formatCurrency(s.totalValue)}</td>
                   </tr>
@@ -157,16 +174,16 @@ function BankStock() {
               })
             ) : (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center", color: "red" }}>
+                <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
                   No Data Found
                 </td>
               </tr>
             )}
 
-            {/* 🔥 GRAND TOTAL ROW */}
+            {/* 🔥 GRAND TOTAL */}
             {filtered.length > 0 && (
               <tr style={{ fontWeight: "bold", background: "#facc15" }}>
-                <td colSpan="5" style={{ textAlign: "right" }}>
+                <td colSpan="6" style={{ textAlign: "right" }}>
                   GRAND TOTAL
                 </td>
                 <td>₹ {formatCurrency(grandTotal)}</td>

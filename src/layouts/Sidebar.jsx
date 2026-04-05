@@ -70,6 +70,21 @@ function Sidebar() {
             <FaWarehouse /> <span>Bank Stock</span>
           </NavLink>
         </li>
+        <li>
+          <NavLink to="/Panel">
+            <FaWarehouse /> <span>Panel</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/PanelOut">
+            <FaWarehouse /> <span>Panel Out</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/Assets">
+            <FaWarehouse /> <span>Assets</span>
+          </NavLink>
+        </li>
 
 
       </ul>

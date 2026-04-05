@@ -38,15 +38,29 @@ function Stock() {
     setFiltered(f);
   };
 
+  // GRAND TOTAL
+  const grandTotal = filtered.reduce((sum, s) => sum + (s.totalValue || 0), 0);
+
   // EXPORT
   const exportExcel = () => {
     const data = filtered.map((s, i) => ({
       "Sl No": i + 1,
       "Material Code": s.materialCode,
       "Description": s.materialName,
-      // "Make": s.make,
-      "Stock": s.currentStock
+      "Stock": s.currentStock,
+      "Price": s.price,
+      "Total Value": s.totalValue
     }));
+
+    // ADD GRAND TOTAL ROW
+    data.push({
+      "Sl No": "",
+      "Material Code": "",
+      "Description": "GRAND TOTAL",
+      "Stock": "",
+      "Price": "",
+      "Total Value": grandTotal
+    });
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -82,26 +96,38 @@ function Stock() {
             <th>Sl No</th>
             <th>Material Code</th>
             <th>Description</th>
-            {/* <th>Make</th> */}
             <th>Stock</th>
+            <th>Price (₹)</th>
+            <th>Total Value (₹)</th>
           </tr>
         </thead>
 
         <tbody>
 
           {filtered.length > 0 ? (
-            filtered.map((s, i) => (
-              <tr key={i}>
-                <td>{i + 1}</td>
-                <td>{s.materialCode}</td>
-                <td>{s.materialName}</td>
-                {/* <td>{s.make}</td> */}
-                <td>{s.currentStock}</td>
+            <>
+              {filtered.map((s, i) => (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>{s.materialCode}</td>
+                  <td>{s.materialName}</td>
+                  <td>{s.currentStock}</td>
+                  <td>₹ {s.price?.toFixed(2)}</td>
+                  <td>₹ {s.totalValue?.toFixed(2)}</td>
+                </tr>
+              ))}
+
+              {/* GRAND TOTAL ROW */}
+              <tr style={{ fontWeight: "bold", background: "#f3f4f6" }}>
+                <td colSpan="5" style={{ textAlign: "right" }}>
+                  Grand Total
+                </td>
+                <td>₹ {grandTotal.toFixed(2)}</td>
               </tr>
-            ))
+            </>
           ) : (
             <tr>
-              <td colSpan="5" style={{ textAlign: "center", color: "red" }}>
+              <td colSpan="6" style={{ textAlign: "center", color: "red" }}>
                 No Data Found
               </td>
             </tr>
