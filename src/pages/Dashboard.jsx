@@ -24,6 +24,7 @@ function Dashboard() {
 
   const [lowStock, setLowStock] = useState([]);
   const [outStock, setOutStock] = useState([]);
+  const [totalStockValue, setTotalStockValue] = useState(0);
 
   const loadDashboard = async () => {
     try {
@@ -75,6 +76,8 @@ function Dashboard() {
         (sum, a) => sum + ((a.price || 0) * (a.qty || 0)),
         0
       );
+      const total = normalTotal + veoliaTotal;
+setTotalStockValue(total);
       setAssetsValue(assetsTotal);
 
       // 💰 OUR FACTORY PANELS VALUE
@@ -181,6 +184,13 @@ function Dashboard() {
             color="secondary"
           />
         </div>
+        <div className="col-md-4">
+  <DashboardCard
+    title="Total Stock Value"
+    value={`₹ ${totalStockValue.toLocaleString("en-IN")}`}
+    color="dark"
+  />
+</div>
 
       </div>
 
