@@ -15,7 +15,6 @@ function Panel(){
 
   const [editRow,setEditRow]=useState(null);
 
-  // eslint-disable-next-line react-hooks/immutability
   useEffect(()=>{ loadPanels(); },[]);
 
   // LOAD + AUTO CALCULATE
@@ -108,6 +107,42 @@ function Panel(){
 
   const commonTotal = filtered.reduce((s,p)=>s+(p.totalValue||0),0);
 
+  // ✅ EXPORT MAIN TABLE
+  const exportMainExcel = () => {
+    const sheetData = filtered.map((p, i) => ({
+      "Sl No": i + 1,
+      "Panel Serial": p.panelSerialNumber,
+      "Project": p.projectName,
+      "Model": p.model,
+      "Status": p.status,
+      "Value": p.totalValue || 0
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Panels");
+
+    XLSX.writeFile(wb, "Panel_List.xlsx");
+  };
+
+  // ✅ EXPORT POPUP TABLE
+  const exportPopupExcel = () => {
+    const sheetData = materials.map((m, i) => ({
+      "Sl No": i + 1,
+      "Material Code": m.materialCode,
+      "Material Name": m.materialName,
+      "Qty": m.qty,
+      "Price": m.price,
+      "Total": m.total
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Materials");
+
+    XLSX.writeFile(wb, `Panel_${selected.panelSerialNumber}.xlsx`);
+  };
+
   return(
     <div className="stock-page">
 
@@ -120,9 +155,13 @@ function Panel(){
           value={search}
           onChange={e=>setSearch(e.target.value)}
         />
+
+        {/* ✅ EXPORT BUTTON */}
+        <button className="btn-export" onClick={exportMainExcel}>
+          Export Excel
+        </button>
       </div>
 
-      {/* TABLE */}
       <div className="table-container">
         <table className="stock-table">
           <thead>
@@ -139,12 +178,10 @@ function Panel(){
 
           <tbody>
             {filtered.map((p,i)=>{
-
               const isEdit = editRow && editRow.panelSerialNumber === p.panelSerialNumber;
 
               return(
                 <tr key={i}>
-
                   <td>{i+1}</td>
 
                   <td
@@ -183,37 +220,21 @@ function Panel(){
                   <td>
                     {isEdit ? (
                       <>
-                        <button className="btn-save" onClick={saveEdit}>
-                          Save
-                        </button>
-                        <button
-                          className="btn-cancel"
-                          onClick={()=>setEditRow(null)}
-                        >
-                          Cancel
-                        </button>
+                        <button className="btn-save" onClick={saveEdit}>Save</button>
+                        <button className="btn-cancel" onClick={()=>setEditRow(null)}>Cancel</button>
                       </>
                     ) : (
-                      <button
-                        className="stock-btn"
-                        onClick={()=>startEdit(p)}
-                      >
-                        Edit
-                      </button>
+                      <button className="stock-btn" onClick={()=>startEdit(p)}>Edit</button>
                     )}
                   </td>
-
                 </tr>
               );
             })}
           </tbody>
 
-          {/* 🔥 3 TOTALS */}
           <tfoot>
             <tr>
-              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>
-                Dispatched Total
-              </td>
+              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>Dispatched Total</td>
               <td style={{fontWeight:"bold", color:"#ef4444"}}>
                 ₹ {Number(dispatchedTotal).toLocaleString("en-IN")}
               </td>
@@ -221,9 +242,7 @@ function Panel(){
             </tr>
 
             <tr>
-              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>
-                Our Factory Total
-              </td>
+              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>Our Factory Total</td>
               <td style={{fontWeight:"bold", color:"#16a34a"}}>
                 ₹ {Number(factoryTotal).toLocaleString("en-IN")}
               </td>
@@ -231,9 +250,7 @@ function Panel(){
             </tr>
 
             <tr>
-              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>
-                Grand Total
-              </td>
+              <td colSpan="5" style={{textAlign:"right", fontWeight:"bold"}}>Grand Total</td>
               <td style={{fontWeight:"bold", color:"#4f46e5"}}>
                 ₹ {Number(commonTotal).toLocaleString("en-IN")}
               </td>
@@ -284,6 +301,10 @@ function Panel(){
             </div>
 
             <div className="modal-actions">
+              <button className="btn-export" onClick={exportPopupExcel}>
+                Export Excel
+              </button>
+
               <button className="btn-cancel" onClick={closePopup}>
                 Close
               </button>
