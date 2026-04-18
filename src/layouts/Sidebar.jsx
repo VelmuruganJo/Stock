@@ -1,59 +1,64 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { FaHome, FaBoxes, FaWarehouse, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { FaHome, FaWarehouse } from "react-icons/fa";
 import { MdInventory } from "react-icons/md";
 import "./Sidebar.css";
 
 function Sidebar() {
-
+  const [otsilOpen, setOtsilOpen] = useState(false);
   const [veoliaOpen, setVeoliaOpen] = useState(false);
+
+  // Close all dropdowns (ONLY for outside links)
+  const closeAllDropdowns = () => {
+    setOtsilOpen(false);
+    setVeoliaOpen(false);
+  };
+
+  // Toggle dropdowns (only one open)
+  const toggleOtsil = () => {
+    setOtsilOpen(!otsilOpen);
+    setVeoliaOpen(false);
+  };
+
+  const toggleVeolia = () => {
+    setVeoliaOpen(!veoliaOpen);
+    setOtsilOpen(false);
+  };
 
   return (
     <div className="sidebar">
-
-      <div className="logo">
+      {/* <div className="logo">
         <h2>OTSIL ERP</h2>
-      </div>
+      </div> */}
 
       <ul className="menu">
-
+        {/* Dashboard */}
         <li>
-          <NavLink to="/" end>
+          <NavLink to="/" end onClick={closeAllDropdowns}>
             <FaHome /> <span>Dashboard</span>
           </NavLink>
         </li>
 
+        {/* OTSIL */}
         <li>
-          <NavLink to="/materials">
-            <FaBoxes /> <span>Materials</span>
-          </NavLink>
-        </li>
+          <div className="dropdown-title" onClick={toggleOtsil}>
+            <MdInventory />
+            <span>OTSIL</span>
+            <span className={`arrow ${otsilOpen ? "open" : ""}`}>▾</span>
+          </div>
 
-        <li>
-          <NavLink to="/stock">
-            <FaWarehouse /> <span>Current Stock</span>
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink to="/stockin">
-            <FaArrowDown /> <span>Stock In</span>
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink to="/stockout">
-            <FaArrowUp /> <span>Stock Out</span>
-          </NavLink>
+          <div className={`submenu ${otsilOpen ? "show" : ""}`}>
+            <NavLink to="/materials">Material</NavLink>
+            <NavLink to="/stockin">In</NavLink>
+            <NavLink to="/stockout">Out</NavLink>
+            <NavLink to="/stock">Stock</NavLink>
+          </div>
         </li>
 
         {/* VEOLIA */}
         <li>
-          <div 
-            className="dropdown-title"
-            onClick={() => setVeoliaOpen(!veoliaOpen)}
-          >
-            <MdInventory /> 
+          <div className="dropdown-title" onClick={toggleVeolia}>
+            <MdInventory />
             <span>VEOLIA</span>
             <span className={`arrow ${veoliaOpen ? "open" : ""}`}>▾</span>
           </div>
@@ -65,30 +70,32 @@ function Sidebar() {
             <NavLink to="/veolia-stock">Stock</NavLink>
           </div>
         </li>
+
+        {/* Outside links → close dropdown */}
         <li>
-          <NavLink to="/Bankstock">
+          <NavLink to="/Bankstock" onClick={closeAllDropdowns}>
             <FaWarehouse /> <span>Bank Stock</span>
           </NavLink>
         </li>
+
         <li>
-          <NavLink to="/Panel">
+          <NavLink to="/Panel" onClick={closeAllDropdowns}>
             <FaWarehouse /> <span>Panel</span>
           </NavLink>
         </li>
+
         <li>
-          <NavLink to="/PanelOut">
+          <NavLink to="/PanelOut" onClick={closeAllDropdowns}>
             <FaWarehouse /> <span>Panel Out</span>
           </NavLink>
         </li>
+
         <li>
-          <NavLink to="/Assets">
+          <NavLink to="/Assets" onClick={closeAllDropdowns}>
             <FaWarehouse /> <span>Assets</span>
           </NavLink>
         </li>
-
-
       </ul>
-
     </div>
   );
 }

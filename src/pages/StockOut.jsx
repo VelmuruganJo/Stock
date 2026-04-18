@@ -20,6 +20,9 @@ function StockOut() {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
+  const [file, setFile] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   // LOAD
   const loadStock = async () => {
@@ -60,6 +63,33 @@ function StockOut() {
       setFiltered(f);
     }
   }, [search, records]);
+
+  // CSV UPLOAD
+  const handleFileUpload = async () => {
+  if (!file) {
+    alert("Select CSV file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await API.post("/stockout/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    setUploadResult(res.data);
+    setShowPopup(true);
+
+    setFile(null);
+    loadStock();
+
+  } catch (err) {
+    console.error(err);
+    alert("Upload Failed");
+  }
+};
 
   // SAVE / UPDATE
   const handleSubmit = async (e) => {
@@ -155,6 +185,23 @@ function StockOut() {
         <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Close Form" : "+ Stock Out"}
         </button>
+        <div className="csv-top-upload">
+
+          <input
+            type="file"
+            accept=".csv"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+          <button
+            type="button"
+            className="btn-save"
+            onClick={handleFileUpload}
+            disabled={!file}
+          >
+            Upload CSV
+          </button>
+
+        </div>
 
         <input
           placeholder="Search..."
@@ -244,11 +291,7 @@ function StockOut() {
                   <td>{i + 1}</td>
                   <td>{r.date}</td>
                   <td>{r.reference}</td>
-
-                  <td style={{ cursor: "pointer", color: "#4f46e5", fontWeight: 600 }}>
-                    {r.materialCode}
-                  </td>
-
+                  <td>{r.materialCode}</td>
                   <td>{r.materialName}</td>
                   <td>{r.vendor}</td>
                   <td>₹ {r.price}</td>
@@ -289,7 +332,86 @@ function StockOut() {
         </table>
       </div>
 
+      {showPopup && uploadResult && (
+  <div className="modal-overlay" onClick={()=>setShowPopup(false)}>
+    <div className="modal-1" onClick={e=>e.stopPropagation()}>
+
+      {/* HEADER */}
+      <div className="modal-header">
+        <h3>CSV Upload Result</h3>
+      </div>
+
+      {/* BODY */}
+      <div className="modal-body">
+
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "15px",
+          fontWeight: "bold"
+        }}>
+          <span style={{color:"#16a34a"}}>
+            ✅ Success: {uploadResult.successCount}
+          </span>
+
+          <span style={{color:"#ef4444"}}>
+            ❌ Failed: {uploadResult.failedCount}
+          </span>
+        </div>
+
+        <div className="csv-result-grid">
+
+          {/* SUCCESS LIST */}
+          <div className="csv-box success-box">
+            <h4>Added Materials</h4>
+
+            <div className="csv-scroll">
+              {uploadResult.successList.length > 0 ? (
+                uploadResult.successList.map((s,i)=>(
+                  <div key={i} className="csv-item success">
+                    {s}
+                  </div>
+                ))
+              ) : (
+                <p>No Success</p>
+              )}
+            </div>
+          </div>
+
+          {/* FAILED LIST */}
+          <div className="csv-box failed-box">
+            <h4>Not Added</h4>
+
+            <div className="csv-scroll">
+              {uploadResult.failedList.length > 0 ? (
+                uploadResult.failedList.map((f,i)=>(
+                  <div key={i} className="csv-item failed">
+                    {f}
+                  </div>
+                ))
+              ) : (
+                <p>No Failures</p>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+      <div className="modal-actions">
+        <button className="btn-cancel" onClick={()=>setShowPopup(false)}>
+          Close
+        </button>
+      </div>
+
     </div>
+  </div>
+)}
+
+    </div>
+
   );
 }
 

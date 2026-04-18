@@ -218,10 +218,10 @@ function Materials() {
           <tbody>
             {filteredRecords.length > 0 ? (
               filteredRecords.map((r,index)=>(
-                <tr key={r.materialCode}>
+                <tr key={r.materialCode} onClick={()=>editMaterial(r)}>
                   <td>{index+1}</td>
 
-                  <td onClick={()=>editMaterial(r)} style={{color:"blue",cursor:"pointer"}}>
+                  <td >
                     {r.materialCode}
                   </td>
 

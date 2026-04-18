@@ -244,7 +244,7 @@ function Assets() {
 
                   <td>{i + 1}</td>
 
-                  <td style={{ cursor: "pointer", color: "#4f46e5", fontWeight: 600 }}>
+                  <td>
                     {a.materialCode}
                   </td>
 

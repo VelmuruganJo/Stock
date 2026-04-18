@@ -1,66 +1,72 @@
-.container-page{
-  padding:50px;
+/* Page */
+.erp-dashboard-page {
+  /* padding: 30px; */
+  background: #f4f7fb;
+  min-height: 100vh;
 }
 
-.dashboard-title{
-  margin-bottom:20px;
-  font-weight:600;
+.erp-dashboard-title {
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
-/* Dashboard Cards */
-
-.dashboard-card{
-  border:none;
-  color:white;
-  border-radius:10px;
+/* Cards */
+.erp-card {
+  border-radius: 12px;
+  color: #fff;
+  transition: 0.2s;
 }
 
-.primary{
-  background:#0d6efd;
+.erp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
 
-.info{
-  background:#0dcaf0;
+.erp-card-body {
+  padding: 18px;
 }
 
-.success{
-  background:#198754;
+.erp-card h6 {
+  font-size: 14px;
 }
 
-.danger{
-  background:#dc3545;
+.erp-card h3 {
+  margin-top: 5px;
+  font-weight: 600;
 }
 
+/* Colors */
+.erp-bg-primary { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.erp-bg-success { background: linear-gradient(135deg,#22c55e,#15803d); }
+.erp-bg-warning { background: linear-gradient(135deg,#facc15,#ca8a04); color:#000; }
+.erp-bg-info { background: linear-gradient(135deg,#06b6d4,#0e7490); }
+.erp-bg-secondary { background: linear-gradient(135deg,#64748b,#334155); }
+.erp-bg-dark { background: linear-gradient(135deg,#111827,#000); }
 
-/* Chart Card */
-
-.chart-card{
-  margin-top:20px;
-  border:none;
-  border-radius:10px;
-}
-
-.chart-title{
-  margin-bottom:15px;
-}
-
+/* NEW COLORS */
+.erp-bg-purple { background: linear-gradient(135deg,#a855f7,#6d28d9); }
+.erp-bg-orange { background: linear-gradient(135deg,#fb923c,#ea580c); }
+.erp-bg-pink { background: linear-gradient(135deg,#f472b6,#db2777); }
+.erp-bg-teal { background: linear-gradient(135deg,#14b8a6,#0f766e); }
+.erp-bg-indigo { background: linear-gradient(135deg,#6366f1,#3730a3); }
 
 /* Tables */
-
-.dashboard-table{
-  border:none;
-  border-radius:10px;
+.erp-table-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
 }
 
-.low-stock-title{
-  color:#ffc107;
+.erp-table-title-warning {
+  color: #f59e0b;
 }
 
-.out-stock-title{
-  color:#dc3545;
+.erp-table-title-danger {
+  color: #ef4444;
 }
 
-.danger-text{
-  color:#dc3545;
-  font-weight:600;
+.erp-danger-text {
+  color: #ef4444;
+  font-weight: 600;
 }

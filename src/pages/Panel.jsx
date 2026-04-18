@@ -15,6 +15,7 @@ function Panel(){
 
   const [editRow,setEditRow]=useState(null);
 
+  // eslint-disable-next-line react-hooks/immutability
   useEffect(()=>{ loadPanels(); },[]);
 
   // LOAD + AUTO CALCULATE
@@ -48,13 +49,18 @@ function Panel(){
   };
 
   // SEARCH
-  useEffect(()=>{
-    const f = data.filter(p =>
-      p.panelSerialNumber?.toLowerCase().includes(search.toLowerCase()) ||
-      p.projectName?.toLowerCase().includes(search.toLowerCase())
-    );
-    setFiltered(f);
-  },[search,data]);
+  useEffect(() => {
+    if (search === "") {
+      setFiltered(data);
+    } else {
+      const f = data.filter(r =>
+        Object.values(r).some(v =>
+          String(v).toLowerCase().includes(search.toLowerCase())
+        )
+      );
+      setFiltered(f);
+    }
+  }, [search, data]);
 
   // OPEN POPUP
   const openPopup = async (row)=>{
@@ -156,7 +162,6 @@ function Panel(){
           onChange={e=>setSearch(e.target.value)}
         />
 
-        {/* ✅ EXPORT BUTTON */}
         <button className="btn-export" onClick={exportMainExcel}>
           Export Excel
         </button>
@@ -177,7 +182,9 @@ function Panel(){
           </thead>
 
           <tbody>
-            {filtered.map((p,i)=>{
+            {[...filtered]
+              .sort((a, b) => (b.status || "").localeCompare(a.status || ""))
+              .map((p,i)=>{
               const isEdit = editRow && editRow.panelSerialNumber === p.panelSerialNumber;
 
               return(
@@ -267,7 +274,8 @@ function Panel(){
           <div className="modal-1" onClick={e=>e.stopPropagation()}>
 
             <div className="modal-header">
-              <h3>Panel : {selected.panelSerialNumber}</h3>
+              <h3>Panel : {selected.panelSerialNumber} _</h3>
+              <h3> _ Project:{selected.projectName}</h3>
             </div>
 
             <div className="modal-body">

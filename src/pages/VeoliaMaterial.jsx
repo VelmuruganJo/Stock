@@ -294,18 +294,11 @@ function VeoliaMaterial() {
           <tbody>
             {filteredRecords.length > 0 ? (
               filteredRecords.map((r, index) => (
-                <tr key={r.materialCode}>
+                <tr onClick={() => editMaterial(r)} key={r.materialCode}>
 
                   <td>{index + 1}</td>
 
-                  <td
-                    onClick={() => editMaterial(r)}
-                    style={{
-                      color: "blue",
-                      cursor: "pointer",
-                      fontWeight: "bold"
-                    }}
-                  >
+                  <td>
                     {r.materialCode}
                   </td>
 

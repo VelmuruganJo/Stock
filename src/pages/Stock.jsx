@@ -14,8 +14,15 @@ function Stock() {
   useEffect(() => {
     API.get("/currentstock")
       .then(res => {
-        setStocks(res.data || []);
-        setFiltered(res.data || []);
+        const data = res.data || [];
+
+        // ✅ SORT BY MAKE A → Z
+        const sorted = [...data].sort((a, b) =>
+          (a.make || "").localeCompare(b.make || "")
+        );
+
+        setStocks(sorted);
+        setFiltered(sorted);
       })
       .catch(err => console.error(err));
   }, []);
@@ -39,7 +46,10 @@ function Stock() {
   };
 
   // GRAND TOTAL
-  const grandTotal = filtered.reduce((sum, s) => sum + (s.totalValue || 0), 0);
+  const grandTotal = filtered.reduce(
+    (sum, s) => sum + (s.totalValue || 0),
+    0
+  );
 
   // EXPORT
   const exportExcel = () => {
@@ -47,16 +57,17 @@ function Stock() {
       "Sl No": i + 1,
       "Material Code": s.materialCode,
       "Description": s.materialName,
+      "Make": s.make,
       "Stock": s.currentStock,
       "Price": s.price,
       "Total Value": s.totalValue
     }));
 
-    // ADD GRAND TOTAL ROW
     data.push({
       "Sl No": "",
       "Material Code": "",
       "Description": "GRAND TOTAL",
+      "Make": "",
       "Stock": "",
       "Price": "",
       "Total Value": grandTotal
@@ -71,7 +82,6 @@ function Stock() {
   };
 
   return (
-
     <div className="stock-page">
 
       <h2>Current Stock</h2>
@@ -89,53 +99,58 @@ function Stock() {
         </button>
       </div>
 
-      <table className="stock-table">
+      <div className="table-container">
 
-        <thead>
-          <tr>
-            <th>Sl No</th>
-            <th>Material Code</th>
-            <th>Description</th>
-            <th>Stock</th>
-            <th>Price (₹)</th>
-            <th>Total Value (₹)</th>
-          </tr>
-        </thead>
+        <table className="stock-table">
 
-        <tbody>
-
-          {filtered.length > 0 ? (
-            <>
-              {filtered.map((s, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{s.materialCode}</td>
-                  <td>{s.materialName}</td>
-                  <td>{s.currentStock}</td>
-                  <td>₹ {s.price?.toFixed(2)}</td>
-                  <td>₹ {s.totalValue?.toFixed(2)}</td>
-                </tr>
-              ))}
-
-              {/* GRAND TOTAL ROW */}
-              <tr style={{ fontWeight: "bold", background: "#f3f4f6" }}>
-                <td colSpan="5" style={{ textAlign: "right" }}>
-                  Grand Total
-                </td>
-                <td>₹ {grandTotal.toFixed(2)}</td>
-              </tr>
-            </>
-          ) : (
+          <thead>
             <tr>
-              <td colSpan="6" style={{ textAlign: "center", color: "red" }}>
-                No Data Found
-              </td>
+              <th>Sl No</th>
+              <th>Material Code</th>
+              <th>Description</th>
+              <th>Make</th>
+              <th>Stock</th>
+              <th>Price (₹)</th>
+              <th>Total Value (₹)</th>
             </tr>
-          )}
+          </thead>
 
-        </tbody>
+          <tbody>
 
-      </table>
+            {filtered.length > 0 ? (
+              <>
+                {filtered.map((s, i) => (
+                  <tr key={i}>
+                    <td>{i + 1}</td>
+                    <td>{s.materialCode}</td>
+                    <td>{s.materialName}</td>
+                    <td>{s.make}</td>
+                    <td>{s.currentStock}</td>
+                    <td>₹ {Number(s.price || 0).toFixed(2)}</td>
+                    <td>₹ {Number(s.totalValue || 0).toFixed(2)}</td>
+                  </tr>
+                ))}
+
+                <tr style={{ fontWeight: "bold", background: "#f3f4f6" }}>
+                  <td colSpan="6" style={{ textAlign: "right" }}>
+                    Grand Total
+                  </td>
+                  <td>₹ {grandTotal.toFixed(2)}</td>
+                </tr>
+              </>
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
+                  No Data Found
+                </td>
+              </tr>
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
   );
