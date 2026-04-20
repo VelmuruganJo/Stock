@@ -250,9 +250,9 @@ function Assets() {
 
                   <td>{a.materialName}</td>
                   <td>{a.make}</td>
-                  <td>₹ {a.price}</td>
+                  <td>₹ {a.price?.toFixed(2)}</td>
                   <td>{a.qty}</td>
-                  <td>₹ {a.totalValue}</td>
+                  <td>₹ {a.totalValue?.toFixed(2)}</td>
                   <td>{a.remarks}</td>
 
                   <td>
@@ -282,7 +282,7 @@ function Assets() {
       Grand Total
     </td>
     <td style={{ fontWeight: "bold", color: "#16a34a" }}>
-      ₹ {Number(grandTotal).toLocaleString("en-IN")}
+      ₹ {(grandTotal?.toFixed(2))}
     </td>
     <td colSpan="2"></td>
   </tr>

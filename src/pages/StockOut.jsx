@@ -20,22 +20,36 @@ function StockOut() {
   const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
+
   const [file, setFile] = useState(null);
   const [uploadResult, setUploadResult] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
+  const [stockError, setStockError] = useState("");
+  const [showStockPopup, setShowStockPopup] = useState(false);
+
   // LOAD
   const loadStock = async () => {
-    const res = await API.get("/stockout");
-    setRecords(res.data || []);
-    setFiltered(res.data || []);
+    try {
+      const res = await API.get("/stockout");
+      setRecords(res.data || []);
+      setFiltered(res.data || []);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load data");
+    }
   };
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadStock(); }, []);
 
-  // 🔥 AUTO FILL
+  // AUTO FILL
   const searchMaterial = async () => {
+    if (!materialCode) {
+      alert("Enter material code");
+      return;
+    }
+
     try {
       const res = await API.get(`/materials/search/${materialCode}`);
       const d = res.data || {};
@@ -66,30 +80,35 @@ function StockOut() {
 
   // CSV UPLOAD
   const handleFileUpload = async () => {
-  if (!file) {
-    alert("Select CSV file");
-    return;
-  }
+    if (!file) {
+      alert("Select CSV file");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    const res = await API.post("/stockout/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+    try {
+      const res = await API.post("/stockout/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
-    setUploadResult(res.data);
-    setShowPopup(true);
+      setUploadResult(res.data);
+      setShowPopup(true);
 
-    setFile(null);
-    loadStock();
+      setFile(null);
 
-  } catch (err) {
-    console.error(err);
-    alert("Upload Failed");
-  }
-};
+      // ✅ RESET INPUT FILE FIELD
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = "";
+
+      loadStock();
+
+    } catch (err) {
+      console.error(err);
+      alert("Upload Failed");
+    }
+  };
 
   // SAVE / UPDATE
   const handleSubmit = async (e) => {
@@ -101,19 +120,29 @@ function StockOut() {
       materialName,
       vendor,
       reference,
-      price,
+      price: parseFloat(price),
       qty: parseFloat(qty)
     };
 
-    if (editId) {
-      await API.put(`/stockout/${editId}`, data);
-      setEditId(null);
-    } else {
-      await API.post("/stockout", data);
-    }
+    try {
+      if (editId) {
+        await API.put(`/stockout/${editId}`, data);
+      } else {
+        await API.post("/stockout", data);
+      }
 
-    resetForm();
-    loadStock();
+      resetForm();
+      loadStock();
+
+    } catch (err) {
+      const msg =
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : err.response?.data?.message || "Stock not available";
+
+      setStockError(msg);
+      setShowStockPopup(true);
+    }
   };
 
   const resetForm = () => {
@@ -144,14 +173,19 @@ function StockOut() {
 
   // DELETE
   const deleteStock = async (id) => {
-    await API.delete(`/stockout/${id}`);
-    loadStock();
+    try {
+      await API.delete(`/stockout/${id}`);
+      loadStock();
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
   };
 
-  // EXPORT
+  // EXPORT TABLE
   const exportExcel = () => {
-    const data = filtered.map((r,i)=>({
-      "SlNo": i+1,
+    const data = filtered.map((r, i) => ({
+      "SlNo": i + 1,
       "Date": r.date,
       "Material Code": r.materialCode,
       "Material": r.materialName,
@@ -166,11 +200,36 @@ function StockOut() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "StockOut");
 
-    const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
-    saveAs(new Blob([buf]),"StockOut.xlsx");
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([buf]), "StockOut.xlsx");
   };
 
-  // GRAND TOTAL
+  // ✅ NEW: CSV UPLOAD REPORT EXPORT
+  const exportUploadReport = () => {
+    if (!uploadResult) return;
+
+    const success = (uploadResult.successList || []).map(code => ({
+      Status: "SUCCESS",
+      MaterialCode: code
+    }));
+
+    const failed = (uploadResult.failedList || []).map(code => ({
+      Status: "FAILED",
+      MaterialCode: code
+    }));
+
+    const data = [...success, ...failed];
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "UploadReport");
+
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    saveAs(new Blob([buf]), "CSV_Upload_Report.xlsx");
+  };
+
   const grandTotal = filtered.reduce(
     (sum, r) => sum + (r.qty * r.price), 0
   );
@@ -185,8 +244,8 @@ function StockOut() {
         <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Close Form" : "+ Stock Out"}
         </button>
-        <div className="csv-top-upload">
 
+        <div className="csv-top-upload">
           <input
             type="file"
             accept=".csv"
@@ -200,7 +259,6 @@ function StockOut() {
           >
             Upload CSV
           </button>
-
         </div>
 
         <input
@@ -218,14 +276,13 @@ function StockOut() {
       {/* FORM */}
       {showForm && (
         <form className="stock-form" onSubmit={handleSubmit}>
-
           <input className="form-input" type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
             required
           />
 
-          <input className="form-input" type="text"
+          <input className="form-input"
             placeholder="Material Code"
             value={materialCode}
             onChange={e => setMaterialCode(e.target.value)}
@@ -235,10 +292,10 @@ function StockOut() {
             Search
           </button>
 
-          <input className="form-input" type="text" value={materialName} readOnly />
-          <input className="form-input" type="text" value={vendor} readOnly />
+          <input className="form-input" value={materialName} readOnly />
+          <input className="form-input" value={vendor} readOnly />
 
-          <input className="form-input" type="text"
+          <input className="form-input"
             placeholder="Reference"
             value={reference}
             onChange={e => setReference(e.target.value)}
@@ -246,7 +303,8 @@ function StockOut() {
 
           <input className="form-input" type="number" value={price} readOnly />
 
-          <input className="form-input" type="number"
+          <input className="form-input"
+            type="number"
             placeholder="Qty"
             value={qty}
             onChange={e => setQty(e.target.value)}
@@ -260,14 +318,12 @@ function StockOut() {
           <button type="button" className="btn-cancel" onClick={resetForm}>
             Cancel
           </button>
-
         </form>
       )}
 
       {/* TABLE */}
       <div className="table-container">
         <table className="stock-table">
-
           <thead>
             <tr>
               <th>Sl No</th>
@@ -287,16 +343,15 @@ function StockOut() {
             {filtered.length > 0 ? (
               filtered.map((r, i) => (
                 <tr key={r.id} onClick={() => editStock(r)}>
-
                   <td>{i + 1}</td>
                   <td>{r.date}</td>
                   <td>{r.reference}</td>
                   <td>{r.materialCode}</td>
                   <td>{r.materialName}</td>
                   <td>{r.vendor}</td>
-                  <td>₹ {r.price}</td>
+                  <td>₹ {r.price?.toFixed(2)}</td>
                   <td>{r.qty}</td>
-                  <td>{r.qty * r.price}</td>
+                  <td>{(r.qty * r.price)?.toFixed(2)}</td>
 
                   <td>
                     <button
@@ -309,7 +364,6 @@ function StockOut() {
                       Delete
                     </button>
                   </td>
-
                 </tr>
               ))
             ) : (
@@ -321,97 +375,104 @@ function StockOut() {
 
           <tfoot>
             <tr>
-              <td colSpan="8" style={{textAlign:"right",fontWeight:"bold"}}>
+              <td colSpan="8" style={{ textAlign: "right", fontWeight: "bold" }}>
                 Grand Total
               </td>
-              <td style={{fontWeight:"bold"}}>₹ {grandTotal}</td>
+              <td style={{ fontWeight: "bold" }}>₹ {grandTotal?.toFixed(2)}</td>
               <td></td>
             </tr>
           </tfoot>
-
         </table>
       </div>
 
-      {showPopup && uploadResult && (
-  <div className="modal-overlay" onClick={()=>setShowPopup(false)}>
-    <div className="modal-1" onClick={e=>e.stopPropagation()}>
+      {/* CSV POPUP */}
+      {/* CSV POPUP */}
+{showPopup && uploadResult && (
+  <div className="modal-overlay" onClick={() => setShowPopup(false)}>
+    <div className="csv-modal" onClick={(e) => e.stopPropagation()}>
 
       {/* HEADER */}
-      <div className="modal-header">
-        <h3>CSV Upload Result</h3>
+      <div className="csv-header">
+        <h3>📦 CSV Upload Report</h3>
       </div>
 
-      {/* BODY */}
-      <div className="modal-body">
-
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "15px",
-          fontWeight: "bold"
-        }}>
-          <span style={{color:"#16a34a"}}>
-            ✅ Success: {uploadResult.successCount}
-          </span>
-
-          <span style={{color:"#ef4444"}}>
-            ❌ Failed: {uploadResult.failedCount}
-          </span>
+      {/* SUMMARY */}
+      <div className="csv-summary">
+        <div className="csv-box success">
+          <span>✔ Success</span>
+          <h2>{uploadResult.successCount}</h2>
         </div>
 
-        <div className="csv-result-grid">
+        <div className="csv-box failed">
+          <span>✖ Failed</span>
+          <h2>{uploadResult.failedCount}</h2>
+        </div>
+      </div>
 
-          {/* SUCCESS LIST */}
-          <div className="csv-box success-box">
-            <h4>Added Materials</h4>
+      {/* CONTENT */}
+      <div className="csv-content">
 
-            <div className="csv-scroll">
-              {uploadResult.successList.length > 0 ? (
-                uploadResult.successList.map((s,i)=>(
-                  <div key={i} className="csv-item success">
-                    {s}
-                  </div>
-                ))
-              ) : (
-                <p>No Success</p>
-              )}
-            </div>
+        {/* SUCCESS LIST */}
+        <div className="csv-section">
+          <h4>✅ Success Material Codes</h4>
+          <div className="csv-list">
+            {uploadResult.successList?.map((code, i) => (
+              <div key={i} className="csv-item success">
+                ✔ {code}
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* FAILED LIST */}
-          <div className="csv-box failed-box">
-            <h4>Not Added</h4>
-
-            <div className="csv-scroll">
-              {uploadResult.failedList.length > 0 ? (
-                uploadResult.failedList.map((f,i)=>(
-                  <div key={i} className="csv-item failed">
-                    {f}
-                  </div>
-                ))
-              ) : (
-                <p>No Failures</p>
-              )}
-            </div>
+        {/* FAILED LIST */}
+        <div className="csv-section">
+          <h4>❌ Failed Material Codes</h4>
+          <div className="csv-list">
+            {uploadResult.failedList?.map((code, i) => (
+              <div key={i} className="csv-item failed">
+                ✖ {code}
+              </div>
+            ))}
           </div>
-
         </div>
 
       </div>
 
       {/* FOOTER */}
-      <div className="modal-actions">
-        <button className="btn-cancel" onClick={()=>setShowPopup(false)}>
+      <div className="csv-footer">
+
+        <button
+          className="btn-export"
+          onClick={exportUploadReport}
+        >
+          Export Report
+        </button>
+
+        <button
+          className="btn-cancel"
+          onClick={() => setShowPopup(false)}
+        >
           Close
         </button>
+
       </div>
 
     </div>
   </div>
 )}
 
-    </div>
+      {/* STOCK ERROR POPUP */}
+      {showStockPopup && (
+        <div className="modal-overlay" onClick={() => setShowStockPopup(false)}>
+          <div className="stock-alert" onClick={e => e.stopPropagation()}>
+            <p style={{ whiteSpace: "pre-line", fontWeight: "600", color: "#b91c1c" }}>
+              {stockError}
+            </p>
+          </div>
+        </div>
+      )}
 
+    </div>
   );
 }
 
