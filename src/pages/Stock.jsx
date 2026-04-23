@@ -16,7 +16,6 @@ function Stock() {
       .then(res => {
         const data = res.data || [];
 
-        // ✅ SORT BY MAKE A → Z
         const sorted = [...data].sort((a, b) =>
           (a.make || "").localeCompare(b.make || "")
         );
@@ -31,14 +30,14 @@ function Stock() {
   const handleSearch = (val) => {
     setSearch(val);
 
-    if (val === "") {
+    if (val.trim() === "") {
       setFiltered(stocks);
       return;
     }
 
     const f = stocks.filter(s =>
       Object.values(s).some(v =>
-        String(v).toLowerCase().includes(val.toLowerCase())
+        String(v ?? "").toLowerCase().includes(val.toLowerCase())
       )
     );
 
@@ -47,7 +46,7 @@ function Stock() {
 
   // GRAND TOTAL
   const grandTotal = filtered.reduce(
-    (sum, s) => sum + (s.totalValue || 0),
+    (sum, s) => sum + Number(s.totalValue || 0),
     0
   );
 
@@ -64,12 +63,7 @@ function Stock() {
     }));
 
     data.push({
-      "Sl No": "",
-      "Material Code": "",
       "Description": "GRAND TOTAL",
-      "Make": "",
-      "Stock": "",
-      "Price": "",
       "Total Value": grandTotal
     });
 
@@ -100,7 +94,6 @@ function Stock() {
       </div>
 
       <div className="table-container">
-
         <table className="stock-table">
 
           <thead>
@@ -110,6 +103,8 @@ function Stock() {
               <th>Description</th>
               <th>Make</th>
               <th>Stock</th>
+              <th>Min</th>
+              <th>Status</th>
               <th>Price (₹)</th>
               <th>Total Value (₹)</th>
             </tr>
@@ -119,20 +114,43 @@ function Stock() {
 
             {filtered.length > 0 ? (
               <>
-                {filtered.map((s, i) => (
-                  <tr key={i}>
-                    <td>{i + 1}</td>
-                    <td>{s.materialCode}</td>
-                    <td>{s.materialName}</td>
-                    <td>{s.make}</td>
-                    <td>{s.currentStock}</td>
-                    <td>₹ {Number(s.price || 0).toFixed(2)}</td>
-                    <td>₹ {Number(s.totalValue || 0).toFixed(2)}</td>
-                  </tr>
-                ))}
+                {filtered.map((s, i) => {
+                  const stock = Number(s.currentStock || 0);
+                  const min = Number(s.minStock || 0);
+
+                  return (
+                    <tr
+                      key={i}
+                      style={{
+                        backgroundColor:
+                          stock === 0
+                            ? "#fecaca"
+                            : stock <= min
+                            ? "#fef08a"
+                            : ""
+                      }}
+                    >
+                      <td>{i + 1}</td>
+                      <td>{s.materialCode}</td>
+                      <td>{s.materialName}</td>
+                      <td>{s.make}</td>
+                      <td>{stock}</td>
+                      <td>{min}</td>
+                      <td>
+                        {stock === 0
+                          ? "Out"
+                          : stock <= min
+                          ? "Low"
+                          : "OK"}
+                      </td>
+                      <td>₹ {Number(s.price || 0).toFixed(2)}</td>
+                      <td>₹ {Number(s.totalValue || 0).toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
 
                 <tr style={{ fontWeight: "bold", background: "#f3f4f6" }}>
-                  <td colSpan="6" style={{ textAlign: "right" }}>
+                  <td colSpan="8" style={{ textAlign: "right" }}>
                     Grand Total
                   </td>
                   <td>₹ {grandTotal.toFixed(2)}</td>
@@ -140,7 +158,7 @@ function Stock() {
               </>
             ) : (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
+                <td colSpan="9" style={{ textAlign: "center", color: "red" }}>
                   No Data Found
                 </td>
               </tr>
@@ -149,7 +167,6 @@ function Stock() {
           </tbody>
 
         </table>
-
       </div>
 
     </div>

@@ -6,54 +6,56 @@ import "./style/common.css";
 
 function Materials() {
 
-  const [materialCode,setMaterialCode] = useState("");
-  const [materialName,setMaterialName] = useState("");
-  const [make,setMake] = useState("");
-  const [vendor,setVendor] = useState("");
-  const [category,setCategory] = useState("");
-  const [price,setPrice] = useState("");
-  const [uom,setUom] = useState("");
+  const [form, setForm] = useState({
+    materialCode: "",
+    materialName: "",
+    make: "",
+    vendor: "",
+    category: "",
+    price: "",
+    uom: "",
+    minStock: "",
+    reorderQty: ""
+  });
 
-  const [records,setRecords] = useState([]);
-  const [filteredRecords,setFilteredRecords] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
 
-  const [editCode,setEditCode] = useState(null);
-  const [showForm,setShowForm] = useState(false);
-  const [search,setSearch] = useState("");
+  const [editCode, setEditCode] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState("");
 
   // LOAD
   const loadData = async () => {
-    try{
+    try {
       const res = await API.get("/materials");
-      setRecords(res.data || []);
-    }catch(err){
+      const data = res.data || [];
+
+      const sorted = [...data].sort((a, b) =>
+        (a.category || "").localeCompare(b.category || "")
+      );
+
+      setRecords(sorted);
+      setFilteredRecords(sorted);
+    } catch (err) {
       console.error(err);
     }
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(()=>{ loadData(); },[]);
-
-  useEffect(()=>{
-    const sorted = [...records].sort((a, b) =>
-      (a.category || "").localeCompare(b.category || "")
-    );
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFilteredRecords(sorted);
-  },[records]);
+  useEffect(() => { loadData(); }, []);
 
   // SEARCH
   const handleSearch = (value) => {
     setSearch(value);
 
-    if(value.trim() === ""){
+    if (value.trim() === "") {
       setFilteredRecords(records);
       return;
     }
 
-    const filtered = records.filter((r) =>
-      Object.values(r).some((val) =>
-        String(val).toLowerCase().includes(value.toLowerCase())
+    const filtered = records.filter(r =>
+      Object.values(r).some(val =>
+        String(val ?? "").toLowerCase().includes(value.toLowerCase())
       )
     );
 
@@ -65,11 +67,13 @@ function Materials() {
     const data = filteredRecords.map((r, index) => ({
       "Sl No": index + 1,
       "Material Code": r.materialCode,
-      "Material Name": r.MaterialName,
+      "Material Name": r.materialName, // ✅ FIXED
       "Make": r.make,
       "Vendor": r.vendor,
       "Category": r.category,
       "UOM": r.uom,
+      "Min Stock": r.minStock,
+      "Reorder Qty": r.reorderQty,
       "Price": r.price
     }));
 
@@ -77,26 +81,27 @@ function Materials() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Materials");
 
-    const buf = XLSX.write(wb,{bookType:"xlsx",type:"array"});
-    saveAs(new Blob([buf]),"Materials.xlsx");
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([buf]), "Materials.xlsx");
+  };
+
+  // INPUT HANDLER
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.placeholder.replace(" ", "").toLowerCase()]: e.target.value });
   };
 
   // SAVE
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const data = {
-      materialCode,materialName,make,vendor,category,price,uom
-    };
-
-    try{
-      if(editCode){
-        await API.put("/materials/" + editCode,data);
+    try {
+      if (editCode) {
+        await API.put("/materials/" + editCode, form);
         setEditCode(null);
-      }else{
-        await API.post("/materials",data);
+      } else {
+        await API.post("/materials", form);
       }
-    }catch(err){
+    } catch (err) {
       console.error(err);
       alert("Error saving");
     }
@@ -107,13 +112,17 @@ function Materials() {
 
   // RESET
   const resetForm = () => {
-    setMaterialCode("");
-    setMaterialName("");
-    setMake("");
-    setVendor("");
-    setCategory("");
-    setPrice("");
-    setUom("");
+    setForm({
+      materialCode: "",
+      materialName: "",
+      make: "",
+      vendor: "",
+      category: "",
+      price: "",
+      uom: "",
+      minStock: "",
+      reorderQty: ""
+    });
     setShowForm(false);
   };
 
@@ -121,33 +130,26 @@ function Materials() {
   const editMaterial = (r) => {
     setEditCode(r.materialCode);
     setShowForm(true);
-
-    setMaterialCode(r.materialCode || "");
-    setMaterialName(r.materialName || "");
-    setMake(r.make || "");
-    setVendor(r.vendor || "");
-    setCategory(r.category || "");
-    setPrice(r.price || "");
-    setUom(r.uom || "");
+    setForm({ ...r });
   };
 
   // DELETE
-  const deleteMaterial = async (code) => {
-    if(!window.confirm("Delete?")) return;
+  const deleteMaterial = async (code, e) => {
+    e.stopPropagation(); // ✅ FIXED (prevents row click)
+    if (!window.confirm("Delete?")) return;
+
     await API.delete("/materials/" + code);
     loadData();
   };
 
   return (
-
     <div className="stock-page">
 
       <h2>Material List</h2>
 
-      {/* TOP BAR ALWAYS VISIBLE */}
       <div className="top-bar">
 
-        <button className="stock-btn" onClick={()=>setShowForm(!showForm)}>
+        <button className="stock-btn" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Close Form" : "Add Material"}
         </button>
 
@@ -156,7 +158,7 @@ function Materials() {
           placeholder="Search Material..."
           className="search-input"
           value={search}
-          onChange={(e)=>handleSearch(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
         />
 
         <button className="btn-export" onClick={exportToExcel}>
@@ -165,30 +167,20 @@ function Materials() {
 
       </div>
 
-      {/* FORM BELOW TOP BAR */}
       {showForm && (
         <form className="stock-form" onSubmit={handleSubmit}>
 
-          <input type="text" placeholder="Material Code" className="form-input"
-            value={materialCode} onChange={(e)=>setMaterialCode(e.target.value)} required />
-
-          <input type="text" placeholder="Material Name" className="form-input"
-            value={materialName} onChange={(e)=>setMaterialName(e.target.value)} required />
-
-          <input type="text" placeholder="Make" className="form-input"
-            value={make} onChange={(e)=>setMake(e.target.value)} />
-
-          <input type="text" placeholder="Vendor" className="form-input"
-            value={vendor} onChange={(e)=>setVendor(e.target.value)} />
-
-          <input type="text" placeholder="Category" className="form-input"
-            value={category} onChange={(e)=>setCategory(e.target.value)} />
-
-          <input type="text" placeholder="UOM" className="form-input"
-            value={uom} onChange={(e)=>setUom(e.target.value)} />
-
-          <input type="number" placeholder="Price" className="form-input"
-            value={price} onChange={(e)=>setPrice(e.target.value)} required />
+          {Object.keys(form).map((key) => (
+            <input
+              key={key}
+              type={key.includes("price") || key.includes("stock") || key.includes("qty") ? "number" : "text"}
+              placeholder={key}
+              className="form-input"
+              value={form[key]}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              required={key === "materialCode" || key === "materialName" || key === "price"}
+            />
+          ))}
 
           <button className="btn-save">
             {editCode ? "Update" : "Save"}
@@ -197,7 +189,6 @@ function Materials() {
         </form>
       )}
 
-      {/* TABLE */}
       <div className="table-container">
         <table className="stock-table">
 
@@ -210,6 +201,8 @@ function Materials() {
               <th>Vendor</th>
               <th>Category</th>
               <th>UOM</th>
+              <th>Min</th>
+              <th>Reorder</th>
               <th>Price</th>
               <th>Delete</th>
             </tr>
@@ -217,23 +210,23 @@ function Materials() {
 
           <tbody>
             {filteredRecords.length > 0 ? (
-              filteredRecords.map((r,index)=>(
-                <tr key={r.materialCode} onClick={()=>editMaterial(r)}>
-                  <td>{index+1}</td>
-
-                  <td >
-                    {r.materialCode}
-                  </td>
-
+              filteredRecords.map((r, index) => (
+                <tr key={r.materialCode} onClick={() => editMaterial(r)}>
+                  <td>{index + 1}</td>
+                  <td>{r.materialCode}</td>
                   <td>{r.materialName}</td>
                   <td>{r.make}</td>
                   <td>{r.vendor}</td>
                   <td>{r.category}</td>
                   <td>{r.uom}</td>
-                  <td>₹ {r.price?.toFixed(2)}</td>
-
+                  <td>{r.minStock}</td>
+                  <td>{r.reorderQty}</td>
+                  <td>₹ {Number(r.price || 0).toFixed(2)}</td>
                   <td>
-                    <button className="btn-cancel" onClick={()=>deleteMaterial(r.materialCode)}>
+                    <button
+                      className="btn-cancel"
+                      onClick={(e) => deleteMaterial(r.materialCode, e)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -241,7 +234,7 @@ function Materials() {
               ))
             ) : (
               <tr>
-                <td colSpan="9">Material Not Available</td>
+                <td colSpan="11">Material Not Available</td>
               </tr>
             )}
           </tbody>

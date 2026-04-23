@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import API from "../api";
 import "./style/Dashboard.css";
 
-function DashboardCard({ title, value, color }) {
+// ✅ FIX: Added valueClass prop
+function DashboardCard({ title, value, color, valueClass }) {
   return (
     <div className={`erp-card ${color}`}>
       <div className="erp-card-body">
         <h6>{title}</h6>
-        <h3>{value}</h3>
+        <h3 className={valueClass}>{value}</h3>
       </div>
     </div>
   );
@@ -46,12 +47,12 @@ function Dashboard() {
       const assets = assetsRes.data || [];
       const panels = panelRes.data || [];
 
-      const normalTotal = stock.reduce((s, i) => s + (i.totalValue || 0), 0);
-      const veoliaTotal = veolia.reduce((s, i) => s + (i.totalValue || 0), 0);
-      const bankTotal = bank.reduce((s, i) => s + (i.totalValue || 0), 0);
+      const normalTotal = stock.reduce((s, i) => s + Number(i.totalValue || 0), 0);
+      const veoliaTotal = veolia.reduce((s, i) => s + Number(i.totalValue || 0), 0);
+      const bankTotal = bank.reduce((s, i) => s + Number(i.totalValue || 0), 0);
 
       const assetsTotal = assets.reduce(
-        (s, a) => s + (a.price || 0) * (a.qty || 0),
+        (s, a) => s + Number(a.price || 0) * Number(a.qty || 0),
         0
       );
 
@@ -66,7 +67,7 @@ function Dashboard() {
       const factoryPanels = panels.filter(p => p.status === "Our Factory");
 
       let factoryTotal = factoryPanels.reduce(
-        (s, p) => s + (p.totalValue || 0),
+        (s, p) => s + Number(p.totalValue || 0),
         0
       );
 
@@ -78,7 +79,7 @@ function Dashboard() {
                 `/panel/materials?panelNo=${encodeURIComponent(p.panelSerialNumber)}`
               );
               return (res.data || []).reduce(
-                (s, m) => s + (m.qty || 0) * (m.price || 0),
+                (s, m) => s + Number(m.qty || 0) * Number(m.price || 0),
                 0
               );
             } catch {
@@ -92,12 +93,18 @@ function Dashboard() {
 
       setFactoryPanelValue(factoryTotal);
 
+      // LOW STOCK
       setLowStock(
-        stock.filter(s => (s.currentStock || 0) > 0 && (s.currentStock || 0) < 10)
+        stock.filter(s => {
+          const current = Number(s.currentStock || 0);
+          const min = Number(s.minStock || 0);
+          return current > 0 && current <= min;
+        })
       );
 
+      // OUT OF STOCK
       setOutStock(
-        stock.filter(s => (s.currentStock || 0) === 0)
+        stock.filter(s => Number(s.currentStock || 0) === 0)
       );
 
     } catch (err) {
@@ -106,99 +113,129 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboard();
   }, []);
 
   return (
     <div className="stock-page">
-    <div className="erp-dashboard-page">
-      <h3 className="erp-dashboard-title">Inventory Dashboard</h3>
+      <div className="erp-dashboard-page">
+        <h3 className="erp-dashboard-title">Inventory Dashboard</h3>
 
-      <div className="row g-3">
+        <div className="row g-3">
 
-        <div className="col-md-3">
-          <DashboardCard title="Normal Stock Value" value={`₹ ${normalValue.toLocaleString("en-IN")}`} color="erp-bg-primary" />
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Normal Stock Value" 
+              value={`₹ ${Math.round(normalValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-primary"
+              valueClass="value_c"
+            />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Veolia Stock Value" 
+              value={`₹ ${Math.round(veoliaValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-teal"
+              valueClass="value_c"
+            />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Bank Stock Value" 
+              value={`₹ ${Math.round(bankValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-warning"
+              valueClass="value_c"
+            />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Assets Value" 
+              value={`₹ ${Math.round(assetsValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-purple"
+              valueClass="value_c"
+            />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Panels Value" 
+              value={`₹ ${Math.round(factoryPanelValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-indigo"
+              valueClass="value_c"
+            />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+              title="Total Stock Value" 
+              value={`₹ ${Math.round(totalStockValue).toLocaleString("en-IN")}`} 
+              color="erp-bg-dark"
+              valueClass="value_c"
+            />
+          </div>
+
         </div>
 
-        <div className="col-md-3">
-          <DashboardCard title="Veolia Stock Value" value={`₹ ${veoliaValue.toLocaleString("en-IN")}`} color="erp-bg-teal" />
-        </div>
+        <div className="row mt-4">
 
-        <div className="col-md-3">
-          <DashboardCard title="Bank Stock Value" value={`₹ ${bankValue.toLocaleString("en-IN")}`} color="erp-bg-warning" />
-        </div>
+          <div className="col-md-6">
+            <div className="erp-table-card">
+              <div className="erp-card-body">
+                <h5 className="erp-table-title-warning">Low Stock Warning</h5>
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Available</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lowStock.length ? lowStock.map((i, idx) => (
+                      <tr key={idx}>
+                        <td>{i.materialName}</td>
+                        <td className="erp-danger-text">{i.currentStock}</td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan="2">No Low Stock</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-        <div className="col-md-3">
-          <DashboardCard title="Assets Value" value={`₹ ${assetsValue.toLocaleString("en-IN")}`} color="erp-bg-purple" />
-        </div>
+          <div className="col-md-6">
+            <div className="erp-table-card">
+              <div className="erp-card-body">
+                <h5 className="erp-table-title-danger">Out Of Stock Items</h5>
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {outStock.length ? outStock.map((i, idx) => (
+                      <tr key={idx}>
+                        <td>{i.materialName}</td>
+                        <td className="erp-danger-text">Out of Stock</td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan="2">No Out Of Stock</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-        <div className="col-md-3">
-          <DashboardCard title="Panels Value" value={`₹ ${factoryPanelValue.toLocaleString("en-IN")}`} color="erp-bg-indigo" />
-        </div>
-
-        <div className="col-md-3">
-          <DashboardCard title="Total Stock Value" value={`₹ ${totalStockValue.toLocaleString("en-IN")}`} color="erp-bg-dark" />
         </div>
 
       </div>
-
-      <div className="row mt-4">
-
-        <div className="col-md-6">
-          <div className="erp-table-card">
-            <div className="erp-card-body">
-              <h5 className="erp-table-title-warning">Low Stock Warning</h5>
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Available</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStock.length ? lowStock.map((i, idx) => (
-                    <tr key={idx}>
-                      <td>{i.materialName}</td>
-                      <td className="erp-danger-text">{i.currentStock}</td>
-                    </tr>
-                  )) : (
-                    <tr><td colSpan="2">No Low Stock</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-6">
-          <div className="erp-table-card">
-            <div className="erp-card-body">
-              <h5 className="erp-table-title-danger">Out Of Stock Items</h5>
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {outStock.length ? outStock.map((i, idx) => (
-                    <tr key={idx}>
-                      <td>{i.materialName}</td>
-                      <td className="erp-danger-text">Out of Stock</td>
-                    </tr>
-                  )) : (
-                    <tr><td colSpan="2">No Out Of Stock</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
     </div>
   );
 }

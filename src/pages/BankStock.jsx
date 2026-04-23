@@ -150,47 +150,49 @@ function BankStock() {
 
           <tbody>
 
-            {filtered.length > 0 ? (
-              filtered.map((s, i) => {
+  {filtered.filter(s => Number(s.currentStock || 0) > 0).length > 0 ? (
+    filtered
+      .filter(s => Number(s.currentStock || 0) > 0)
+      .map((s, i) => {
 
-                const isHighValue = (s.totalValue ?? 0) > 100000;
+        const isHighValue = (s.totalValue ?? 0) > 100000;
 
-                return (
-                  <tr
-                    key={i}
-                    style={{
-                      backgroundColor: isHighValue ? "#dcfce7" : ""
-                    }}
-                  >
-                    <td>{i + 1}</td>
-                    <td>{s.materialCode}</td>
-                    <td>{s.materialName}</td>
-                    <td>₹ {formatCurrency(s.price)}</td>
-                    <td>{s.lastMonthStock ?? 0}</td>
-                    <td>{s.currentStock ?? 0}</td>
-                    <td>₹ {formatCurrency(s.totalValue)}</td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
-                  No Data Found
-                </td>
-              </tr>
-            )}
+        return (
+          <tr
+            key={i}
+            style={{
+              backgroundColor: isHighValue ? "#dcfce7" : ""
+            }}
+          >
+            <td>{i + 1}</td>
+            <td>{s.materialCode}</td>
+            <td>{s.materialName}</td>
+            <td>₹ {formatCurrency(s.price)}</td>
+            <td>{s.lastMonthStock ?? 0}</td>
+            <td>{s.currentStock ?? 0}</td>
+            <td>₹ {formatCurrency(s.totalValue)}</td>
+          </tr>
+        );
+      })
+  ) : (
+    <tr>
+      <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
+        No Data Found
+      </td>
+    </tr>
+  )}
 
-            {/* 🔥 GRAND TOTAL */}
-            {filtered.length > 0 && (
-              <tr style={{ fontWeight: "bold", background: "#facc15" }}>
-                <td colSpan="6" style={{ textAlign: "right" }}>
-                  GRAND TOTAL
-                </td>
-                <td>₹ {formatCurrency(grandTotal)}</td>
-              </tr>
-            )}
+  {/* GRAND TOTAL (unchanged) */}
+  {filtered.length > 0 && (
+    <tr style={{ fontWeight: "bold", background: "#facc15" }}>
+      <td colSpan="6" style={{ textAlign: "right" }}>
+        GRAND TOTAL
+      </td>
+      <td>₹ {formatCurrency(grandTotal)}</td>
+    </tr>
+  )}
 
-          </tbody>
+</tbody>
 
         </table>
 
