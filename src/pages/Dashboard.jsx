@@ -21,7 +21,7 @@ function Dashboard() {
   const [assetsValue, setAssetsValue] = useState(0);
   const [factoryPanelValue, setFactoryPanelValue] = useState(0);
   const [totalStockValue, setTotalStockValue] = useState(0);
-
+  const [totalStockOverall, setTotalStockOverall] = useState(0);
   const [lowStock, setLowStock] = useState([]);
   const [outStock, setOutStock] = useState([]);
 
@@ -92,6 +92,8 @@ function Dashboard() {
       }
 
       setFactoryPanelValue(factoryTotal);
+      const overall = normalTotal + veoliaTotal + factoryTotal;
+setTotalStockOverall(overall);
 
       // LOW STOCK
       setLowStock(
@@ -112,6 +114,7 @@ function Dashboard() {
     }
   };
 
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -125,7 +128,7 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Normal Stock Value" 
+              title="OTSIL Stock" 
               value={`₹ ${Math.round(normalValue).toLocaleString("en-IN")}`} 
               color="erp-bg-primary"
               valueClass="value_c"
@@ -134,7 +137,7 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Veolia Stock Value" 
+              title="Veolia Stock" 
               value={`₹ ${Math.round(veoliaValue).toLocaleString("en-IN")}`} 
               color="erp-bg-teal"
               valueClass="value_c"
@@ -143,7 +146,7 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Bank Stock Value" 
+              title="Bank Stock" 
               value={`₹ ${Math.round(bankValue).toLocaleString("en-IN")}`} 
               color="erp-bg-warning"
               valueClass="value_c"
@@ -152,7 +155,7 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Assets Value" 
+              title="Assets" 
               value={`₹ ${Math.round(assetsValue).toLocaleString("en-IN")}`} 
               color="erp-bg-purple"
               valueClass="value_c"
@@ -161,7 +164,7 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Panels Value" 
+              title="Production Stock" 
               value={`₹ ${Math.round(factoryPanelValue).toLocaleString("en-IN")}`} 
               color="erp-bg-indigo"
               valueClass="value_c"
@@ -170,11 +173,20 @@ function Dashboard() {
 
           <div className="col-md-3">
             <DashboardCard 
-              title="Total Stock Value" 
+              title="Total Stock in Store" 
               value={`₹ ${Math.round(totalStockValue).toLocaleString("en-IN")}`} 
               color="erp-bg-dark"
               valueClass="value_c"
             />
+          </div>
+
+          <div className="col-md-3">
+            <DashboardCard 
+  title="Total Stock Overall" 
+  value={`₹ ${Math.round(totalStockOverall).toLocaleString("en-IN")}`} 
+  color="erp-bg-dark"
+  valueClass="value_c"
+/>
           </div>
 
         </div>

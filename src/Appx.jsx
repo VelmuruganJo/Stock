@@ -19,6 +19,9 @@ import BankStock from "./pages/BankStock.jsx";
 import Assets from "./pages/Assets.jsx";
 import Panel from "./pages/Panel.jsx";
 import PanelOut from "./pages/PanelOut.jsx";
+import PanelNew from "./pages/PanelNew";
+import PanelCheck from "./pages/PanelCompare.jsx";
+import PanelBOM from "./pages/PanelBOM.jsx";
 
 function Appx(){
 
@@ -53,7 +56,9 @@ return(
 <Route path="/Assets" element={<Assets />} />
 <Route path="/Panel" element={<Panel />} />
 <Route path="/panelOut" element={<PanelOut />} />
-
+<Route path="/panel-new" element={<PanelNew />} />
+<Route path="/panel-check" element={<PanelCheck/>}/>
+<Route path="/bom" element={<PanelBOM />} />
 
 </Routes>
 

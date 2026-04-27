@@ -174,6 +174,7 @@ function Panel(){
               <th>Sl No</th>
               <th>Panel Serial</th>
               <th>Project</th>
+              <th>PO Number</th>
               <th>Model</th>
               <th>Status</th>
               <th>Value</th>
@@ -207,6 +208,17 @@ function Panel(){
                       />
                     ) : p.projectName}
                   </td>
+                  <td>
+  {isEdit ? (
+    <input
+      className="form-input"
+      value={editRow.poNumber || ""}
+      onChange={e =>
+        setEditRow({ ...editRow, poNumber: e.target.value })
+      }
+    />
+  ) : p.poNumber}
+</td>
 
                   <td>
                     {isEdit ? (

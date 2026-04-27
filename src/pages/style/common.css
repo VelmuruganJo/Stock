@@ -3,10 +3,10 @@
   background: linear-gradient(135deg, #eef2ff, #f8fafc);
   min-height: 100vh;
 
-  margin-left: 220px;
+  margin-left: 180px;
   padding: 30px;
   padding-top: 30px;
-  width: calc(100% - 220px);
+  width: calc(100% - 180px);
   position: relative; /* 🔥 REQUIRED */
   z-index: 1;
   font-size: 11px;
@@ -95,6 +95,7 @@ h2 {
   overflow-y: auto;
   border-radius: 16px;
   background: white;
+  width: 1150px;
 }
 
 .stock-table {
@@ -149,7 +150,7 @@ h2 {
 /* HEADER */
 .modal-header {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  color: white;
+  color: rgb(0, 0, 0);
   padding: 20px;
 }
 
@@ -445,4 +446,98 @@ h2 {
   justify-content: center;
   padding: 10px;
   background: #f8fafc;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0,0,0,0.6);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+/* 🔥 FIX SCROLL ISSUE */
+.modal-1 {
+  background: white;
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* sticky header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: white;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* table scroll */
+.modal-body {
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+/* footer fixed */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* ===== POPUP HEADER STYLING ===== */
+
+.custom-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+}
+
+.header-line1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937; /* dark */
+}
+
+.header-line2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280; /* gray */
+}
+
+/* highlight values */
+.custom-header span {
+  color: #4f46e5; /* indigo */
+  font-weight: 600;
+}
+
+.btn-delete {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  margin-left: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: #b91c1c;
 }
