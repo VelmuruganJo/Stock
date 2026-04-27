@@ -190,13 +190,10 @@ function Bom(){
           <option>25G ID</option>
             <option>25G WD</option>
             <option>25G WOD</option>
-
             <option>50G ID</option>
             <option>50G WD</option>
             <option>50G WOD</option>
-
             <option>25G TRI-ID</option>
-
             <option>50G TRI-ID</option>
         </select>
 
